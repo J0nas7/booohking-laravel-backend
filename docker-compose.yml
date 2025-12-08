@@ -1,0 +1,68 @@
+services:
+  # Next.js Frontend (Live Coding Enabled)
+  frontend:
+    build:
+      context: ../booohking-nextjs-frontend
+      dockerfile: Dockerfile
+    container_name: booohking-nextjs-frontend
+    restart: unless-stopped
+    command: npm run dev  # Run Next.js in development mode
+    volumes:
+      - ../booohking-nextjs-frontend:/app  # Mount Next.js source code
+      - /app/node_modules    # Exclude node_modules to avoid conflicts
+      - /app/.next           # Exclude .next to avoid conflicts with the build cache
+    ports:
+      - "3000:3000"  # Map host:container port
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  # Laravel Backend (Live Coding Enabled)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: booohking-laravel-backend
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html  # Mount Laravel source code
+      #- /var/www/html/vendor  # Exclude vendor folder
+      - ./database:/var/www/html/database
+    ports:
+      - "8080:8080"  # Map host:container port
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+    networks:
+      - app-network
+    depends_on:
+      - redis
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: booohking-redis-service
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
+# Define volumes and networks
+volumes:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
