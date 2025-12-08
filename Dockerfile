@@ -24,14 +24,14 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Install PHP dependencies (Laravel)
-RUN composer install --no-dev --optimize-autoloader
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set Laravel storage permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
+
+# Install PHP dependencies (Laravel)
+RUN composer install --no-dev --optimize-autoloader
 
 # Expose port 8080 like your GAE config
 EXPOSE 8080

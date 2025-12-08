@@ -57,6 +57,23 @@ This will start:
 - SQLite database
 - Next.js frontend (port 3000)
 
+Once the container is running, you need to setup Laravel environment, by entering the Docker compose backend:
+```bash
+docker-compose exec backend bash
+```
+
+And then run inside container:
+```bash
+cp .env.example .env
+php artisan jwt:secret
+touch database/database.sqlite
+chmod 777 database/database.sqlite
+composer install
+php artisan migrate --seed
+```
+
+After setup, all subsequent project starts is simply **docker-compose up**.
+
 ## Pre-seeded users you can sign in with:
 
 # ADMIN
