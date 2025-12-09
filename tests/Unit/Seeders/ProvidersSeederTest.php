@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit\Seeders;
 
 use App\Models\Provider;
 use App\Models\Service;

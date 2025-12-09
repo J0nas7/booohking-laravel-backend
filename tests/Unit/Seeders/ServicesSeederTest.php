@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit\Seeders;
 
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
