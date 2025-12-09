@@ -44,7 +44,7 @@ Clone both repositories into the **same parent folder**:
 ### Build the backend and frontend
 ```bash
 cd booohking-laravel-backend
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 This will start:
