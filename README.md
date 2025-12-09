@@ -61,11 +61,11 @@ docker-compose exec backend bash
 
 And then run inside container:
 ```bash
+composer install
 cp .env.example .env
 php artisan jwt:secret
 touch database/database.sqlite
 chmod 777 database/database.sqlite
-composer install
 php artisan migrate --seed
 ```
 
