@@ -22,62 +22,73 @@ class BookingService
      */
     public static function generateAvailableSlots(Provider $provider, int $daysAhead = 30, int $slotMinutes = 30, ?int $serviceId = null): array
     {
-        $duration = $slotMinutes;
-
-        if ($serviceId) {
-            $service = Service::findOrFail($serviceId);
-            $duration = $service->Service_DurationMinutes;
-        }
+        $duration = $serviceId
+            ? Service::findOrFail($serviceId)->Service_DurationMinutes
+            : $slotMinutes;
 
         $slots = [];
+        $providerTz = $provider->Provider_Timezone ?? 'UTC'; // fallback to UTC
 
         for ($d = 0; $d < $daysAhead; $d++) {
-            $date = Carbon::today()->addDays($d);
-            $dayOfWeek = $date->dayOfWeek;
+            $dateLocal = Carbon::today($providerTz)->addDays($d);
+            $dayOfWeek = $dateLocal->dayOfWeek;
 
             $workingHours = ProviderWorkingHour::where('Provider_ID', $provider->Provider_ID)
                 ->where('PWH_DayOfWeek', $dayOfWeek)
-                ->orderBy('PWH_DayOfWeek')  // ensure chronological order
+                ->orderBy('PWH_StartTime')
                 ->get();
 
-            if (!$workingHours) {
+            if ($workingHours->isEmpty()) {
                 continue;
             }
 
             foreach ($workingHours as $period) {
-                $startTime = substr($period->PWH_StartTime, 0, 5); // "HH:MM"
-                $endTime = substr($period->PWH_EndTime, 0, 5);
 
-                $start = Carbon::createFromFormat('Y-m-d H:i', $date->format('Y-m-d') . ' ' . $startTime);
-                $end   = Carbon::createFromFormat('Y-m-d H:i', $date->format('Y-m-d') . ' ' . $endTime);
+                // 1) Create provider local start/end
+                $startLocal = Carbon::createFromFormat(
+                    'Y-m-d H:i:s',
+                    $dateLocal->format('Y-m-d') . ' ' . $period->PWH_StartTime,
+                    $providerTz
+                );
+                $endLocal = Carbon::createFromFormat(
+                    'Y-m-d H:i:s',
+                    $dateLocal->format('Y-m-d') . ' ' . $period->PWH_EndTime,
+                    $providerTz
+                );
 
-                $periodSlots = CarbonPeriod::create($start, "$duration minutes", $end->copy()->subSecond());
+                // 2) Convert working hours to UTC for slot generation
+                $startUTC = $startLocal->copy()->setTimezone('UTC');
+                $endUTC   = $endLocal->copy()->setTimezone('UTC');
 
-                foreach ($periodSlots as $slotStart) {
-                    $slotStart = $slotStart->copy(); // clone to avoid mutation
-                    $slotEnd = $slotStart->copy()->addMinutes($duration);
+                // 3) Build the slot period in UTC
+                $periodSlots = CarbonPeriod::create($startUTC, "$duration minutes", $endUTC->copy()->subSecond());
 
-                    // Skip slots that go past the working period
-                    if ($slotEnd->gt($end)) {
+                foreach ($periodSlots as $slotStartUTC) {
+                    $slotStartUTC = $slotStartUTC->copy();
+                    $slotEndUTC   = $slotStartUTC->copy()->addMinutes($duration);
+
+                    // Skip if slot passes working period
+                    if ($slotEndUTC->gt($endUTC)) {
                         continue;
                     }
 
-                    // skip past slots for today
-                    if ($date->isToday() && $slotStart->lte(Carbon::now())) {
+                    // Skip past-time slots for today
+                    $nowUTC = Carbon::now('UTC');
+                    if ($dateLocal->isToday() && $slotStartUTC->lte($nowUTC)) {
                         continue;
                     }
 
-                    // Skip if slot is already booked
+                    // 4) Overlap detection in UTC
                     $overlap = Booking::where('Provider_ID', $provider->Provider_ID)
-                        ->whereDate('Booking_StartAt', $date->toDateString())
-                        ->where('Booking_Status', 'booked') // Ensure only "booked" status is checked
-                        ->whereNull('Booking_CancelledAt') // Ensure the "CancelledAt" field is null
-                        ->where(function ($query) use ($slotStart, $slotEnd) {
-                            $query->whereBetween('Booking_StartAt', [$slotStart, $slotEnd->copy()->subSecond()])
-                                ->orWhereBetween('Booking_EndAt', [$slotStart->copy()->addSecond(), $slotEnd])
-                                ->orWhere(function ($q) use ($slotStart, $slotEnd) {
-                                    $q->where('Booking_StartAt', '<', $slotStart)
-                                        ->where('Booking_EndAt', '>', $slotEnd);
+                        ->whereDate('Booking_StartAt', $slotStartUTC->toDateString())
+                        ->where('Booking_Status', 'booked')
+                        ->whereNull('Booking_CancelledAt')
+                        ->where(function ($query) use ($slotStartUTC, $slotEndUTC) {
+                            $query->whereBetween('Booking_StartAt', [$slotStartUTC, $slotEndUTC->copy()->subSecond()])
+                                ->orWhereBetween('Booking_EndAt', [$slotStartUTC->copy()->addSecond(), $slotEndUTC])
+                                ->orWhere(function ($q) use ($slotStartUTC, $slotEndUTC) {
+                                    $q->where('Booking_StartAt', '<', $slotStartUTC)
+                                        ->where('Booking_EndAt', '>', $slotEndUTC);
                                 });
                         })
                         ->exists();
@@ -86,15 +97,44 @@ class BookingService
                         continue;
                     }
 
+                    // 5) Convert slot to provider local timezone for frontend
+                    $slotStartLocal = $slotStartUTC->copy()->setTimezone($providerTz);
+                    $slotEndLocal   = $slotEndUTC->copy()->setTimezone($providerTz);
+
                     $slots[] = [
-                        'date'  => $slotStart->format('Y-m-d'), // use slotStart date
-                        'start' => $slotStart->format('H:i'),
-                        'end'   => $slotEnd->format('H:i'),
+                        'slotStart' => $slotStartLocal,
+                        'date'      => $slotStartLocal->format('Y-m-d'),
+                        'start'     => $slotStartLocal->format('H:i'),
+                        'end'       => $slotEndLocal->format('H:i'),
                     ];
                 }
             }
         }
 
         return $slots;
+    }
+
+    /**
+     * Convert paginated booking times from UTC to CET.
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $paginated Paginated booking data
+     * @return \Illuminate\Support\Collection Converted booking data with CET times
+     */
+    public static function convertUTCtoCET($paginated)
+    {
+        // Convert UTC -> CET on the fly
+        $convertedItems = $paginated->getCollection()->transform(function ($booking) {
+            $booking->Booking_StartAt = $booking->Booking_StartAt
+                ? $booking->Booking_StartAt->setTimezone('Europe/Copenhagen')->format('Y-m-d H:i')
+                : null;
+
+            $booking->Booking_EndAt = $booking->Booking_EndAt
+                ? $booking->Booking_EndAt->setTimezone('Europe/Copenhagen')->format('Y-m-d H:i')
+                : null;
+
+            return $booking;
+        });
+
+        return $convertedItems;
     }
 }

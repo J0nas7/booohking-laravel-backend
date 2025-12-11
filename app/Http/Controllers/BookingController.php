@@ -100,6 +100,12 @@ class BookingController extends BaseController
         // Paginate results
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
+        // Convert UTC -> CET on the fly
+        // $convertedItems = \App\Services\BookingService::convertUTCtoCET($paginated);
+
+        // // Replace the collection inside paginator
+        // $paginated->setCollection($convertedItems);
+
         // Empty case
         if ($paginated->isEmpty()) {
             return response()->json([
@@ -152,6 +158,12 @@ class BookingController extends BaseController
         // Paginate the results
         $paginated = $query->orderBy('Booking_StartAt', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
+
+        // Convert UTC -> CET on the fly
+        // $convertedItems = \App\Services\BookingService::convertUTCtoCET($paginated);
+
+        // // Replace the collection inside paginator
+        // $paginated->setCollection($convertedItems);
 
         return response()->json($paginated);
     }

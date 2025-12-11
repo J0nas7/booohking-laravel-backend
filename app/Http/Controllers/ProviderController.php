@@ -121,7 +121,7 @@ class ProviderController extends BaseController
         // Check cache
         $cachedResource = Cache::get($cacheKey);
         if ($cachedResource) {
-            return response()->json(json_decode($cachedResource, true));
+            // return response()->json(json_decode($cachedResource, true));
         }
 
         $item = ($this->modelClass)::with($this->with)->findOrFail($id);

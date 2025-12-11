@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends BaseModel
@@ -40,6 +42,8 @@ class Booking extends BaseModel
             $this->fieldPrefix . 'DeletedAt' => 'datetime',
         ];
     }
+
+    // Relationships
 
     public function user()
     {

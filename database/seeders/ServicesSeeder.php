@@ -20,7 +20,7 @@ class ServicesSeeder extends Seeder
         for ($i = 0; $i < 6; $i++) {
             Service::create([
                 'Service_Name' => $faker->jobTitle(), // e.g., "Senior Hair Stylist"
-                'Service_DurationMinutes' => $faker->numberBetween(15, 120),
+                'Service_DurationMinutes' => 30, //$faker->numberBetween(15, 120),
                 'User_ID' => 1, // assign to the created user
             ]);
         }
