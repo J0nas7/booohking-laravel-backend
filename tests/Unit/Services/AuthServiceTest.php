@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Services;
+namespace Tests\Unit\Services;
 
 use App\Mail\ForgotPasswordMail;
 use App\Models\User;
