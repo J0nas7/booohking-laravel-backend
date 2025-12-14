@@ -37,8 +37,8 @@ class BookingServiceTest extends TestCase
         ProviderWorkingHour::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => $tomorrow->dayOfWeek,
-            'PWH_StartTime' => '09:00',
-            'PWH_EndTime' => '17:00',
+            'PWH_StartTime' => '09:00:00',
+            'PWH_EndTime' => '17:00:00',
         ]);
 
         $slots = BookingService::generateAvailableSlots($provider, 2, 30);
@@ -76,8 +76,8 @@ class BookingServiceTest extends TestCase
         ProviderWorkingHour::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => $tomorrow->dayOfWeek,
-            'PWH_StartTime' => '10:00',
-            'PWH_EndTime' => '12:00',
+            'PWH_StartTime' => '10:00:00',
+            'PWH_EndTime' => '12:00:00',
         ]);
 
         // Create an existing booking at 10:30 - (30m)
@@ -114,8 +114,8 @@ class BookingServiceTest extends TestCase
         ProviderWorkingHour::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => $tomorrow->dayOfWeek,
-            'PWH_StartTime' => '09:00',
-            'PWH_EndTime' => '13:00',
+            'PWH_StartTime' => '09:00:00',
+            'PWH_EndTime' => '13:00:00',
         ]);
 
         $slots = BookingService::generateAvailableSlots($provider, 2, 60, $service->Service_ID);
@@ -158,16 +158,16 @@ class BookingServiceTest extends TestCase
         ProviderWorkingHour::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => $tomorrow->dayOfWeek,
-            'PWH_StartTime' => '09:00',
-            'PWH_EndTime' => '12:00',
+            'PWH_StartTime' => '09:00:00',
+            'PWH_EndTime' => '12:00:00',
         ]);
 
         // afternoon 13:00-17:00
         ProviderWorkingHour::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => $tomorrow->dayOfWeek,
-            'PWH_StartTime' => '13:00',
-            'PWH_EndTime' => '17:00',
+            'PWH_StartTime' => '13:00:00',
+            'PWH_EndTime' => '17:00:00',
         ]);
 
         $slots = BookingService::generateAvailableSlots($provider, 2, 30);
@@ -211,8 +211,8 @@ class BookingServiceTest extends TestCase
         ProviderWorkingHour::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => $today->dayOfWeek,
-            'PWH_StartTime' => '09:00',
-            'PWH_EndTime' => '14:00',
+            'PWH_StartTime' => '09:00:00',
+            'PWH_EndTime' => '14:00:00',
         ]);
 
         $slots = BookingService::generateAvailableSlots($provider, 1, 30);

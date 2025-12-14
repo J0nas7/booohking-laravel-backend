@@ -8,6 +8,7 @@ use App\Models\ProviderWorkingHour;
 use App\Models\Service;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Log;
 
 class BookingService
 {
@@ -45,9 +46,10 @@ class BookingService
             foreach ($workingHours as $period) {
 
                 // 1) Create provider local start/end
+                $startString = $dateLocal->format('Y-m-d') . ' ' . $period->PWH_StartTime;
                 $startLocal = Carbon::createFromFormat(
                     'Y-m-d H:i:s',
-                    $dateLocal->format('Y-m-d') . ' ' . $period->PWH_StartTime,
+                    $startString,
                     $providerTz
                 );
                 $endLocal = Carbon::createFromFormat(

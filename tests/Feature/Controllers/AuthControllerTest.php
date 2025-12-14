@@ -169,4 +169,66 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(401)
             ->assertJson(['message' => 'Unauthenticated.']);
     }
+
+    #[Test]
+    public function login_is_throttled_after_too_many_attempts()
+    {
+        $user = User::factory()->create([
+            'User_Password' => bcrypt('password123'),
+        ]);
+
+        // 5 allowed attempts
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/auth/login', [
+                'User_Email' => $user->User_Email,
+                'password' => 'wrongpassword',
+            ])->assertStatus(401);
+        }
+
+        // 6th attempt should be throttled
+        $response = $this->postJson('/api/auth/login', [
+            'User_Email' => $user->User_Email,
+            'password' => 'wrongpassword',
+        ]);
+
+        $response->assertStatus(429);
+    }
+
+    #[Test]
+    public function password_reset_is_throttled()
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $this->postJson('/api/auth/forgot-password', [
+                'User_Email' => 'nonexistent@example.com',
+            ]);
+        }
+
+        $response = $this->postJson('/api/auth/forgot-password', [
+            'User_Email' => 'nonexistent@example.com',
+        ]);
+
+        $response->assertStatus(429);
+    }
+
+    #[Test]
+    public function jwt_endpoints_are_throttled_after_too_many_requests()
+    {
+        $user = User::factory()->create();
+        $token = JWTAuth::fromUser($user);
+
+        // 10 allowed requests
+        for ($i = 0; $i < 10; $i++) {
+            $this->withHeaders([
+                'Authorization' => "Bearer $token",
+            ])->postJson('/api/auth/clone-token')
+                ->assertStatus(200);
+        }
+
+        // 11th request should be throttled
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer $token",
+        ])->postJson('/api/auth/clone-token');
+
+        $response->assertStatus(429);
+    }
 }
