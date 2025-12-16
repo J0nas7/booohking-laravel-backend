@@ -7,27 +7,49 @@ use App\Models\Provider;
 use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 class BookingsSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::where('User_Email', 'jonas-usr@booohking.com')->first();
-        $service = Service::first();
-        $provider = Provider::first();
+        // Ensure base data exists
+        $users = User::query()->exists()
+            ? User::all()
+            : User::factory()->count(5)->create();
 
-        // Example booking tomorrow at 10:00
-        $start = Carbon::tomorrow()->setHour(10)->setMinute(0)->setSecond(0);
+        $services = Service::query()->exists()
+            ? Service::all()
+            : Service::factory()->count(5)->create();
 
-        Booking::create([
-            'User_ID' => $user->User_ID,
-            'Provider_ID' => $provider->Provider_ID,
-            'Service_ID' => $service->Service_ID,
-            'Booking_StartAt' => $start,
-            'Booking_EndAt' => $start->copy()->addMinutes($service->Service_DurationMinutes),
-            'Booking_Status' => 'booked',
-        ]);
+        $providers = Provider::query()->exists()
+            ? Provider::all()
+            : Provider::factory()
+            ->count(5)
+            ->forService($services->random())
+            ->create();
+
+        // Create deterministic, non-overlapping demo bookings
+        $startAt = Carbon::tomorrow()->setHour(9)->setMinute(0)->setSecond(0);
+
+        foreach ($providers as $provider) {
+            $service = $services->random();
+
+            // 3 bookings per provider, sequential (no overlaps)
+            for ($i = 0; $i < 3; $i++) {
+                Booking::factory()->create([
+                    'User_ID' => $users->random()->User_ID,
+                    'Service_ID' => $service->Service_ID,
+                    'Provider_ID' => $provider->Provider_ID,
+                    'Booking_StartAt' => $startAt,
+                    'Booking_EndAt' => (clone $startAt)
+                        ->addMinutes($service->Service_DurationMinutes),
+                ]);
+
+                // Move to next slot
+                $startAt->addMinutes($service->Service_DurationMinutes);
+            }
+        }
     }
 }

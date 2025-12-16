@@ -10,50 +10,43 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Booking>
+ * @extends Factory<Booking>
  */
 class BookingFactory extends Factory
 {
     protected $model = Booking::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        // Random booking duration between 30 and 120 minutes
         $durationMinutes = $this->faker->randomElement([30, 45, 60, 90, 120]);
 
-        // Generate a random start time
         $startAt = Carbon::now()
-            ->addDays($this->faker->numberBetween(1, 10))
+            ->addDays($this->faker->numberBetween(1, 14))
             ->setHour($this->faker->numberBetween(8, 16))
-            ->setMinute($this->faker->randomElement([0, 30]));
-
-        $endAt = $startAt->copy()->addMinutes($durationMinutes);
-
-        // Pick or create a provider
-        $provider = Provider::factory()->create();
-
-        // Ensure uniqueness per provider by adding a small random offset if needed
-        $existingBookings = Booking::where('Provider_ID', $provider->id)
-            ->pluck('Booking_StartAt')
-            ->toArray();
-
-        while (in_array($startAt->toDateTimeString(), $existingBookings)) {
-            // Add 30 minutes until unique
-            $startAt->addMinutes(30);
-            $endAt = $startAt->copy()->addMinutes($durationMinutes);
-        }
+            ->setMinute($this->faker->randomElement([0, 30]))
+            ->setSecond(0);
 
         return [
-            'Provider_ID' => $provider->Provider_ID,
+            // Relationship-driven FKs
             'User_ID' => User::factory(),
             'Service_ID' => Service::factory(),
+            'Provider_ID' => Provider::factory(),
+
             'Booking_StartAt' => $startAt,
-            'Booking_EndAt' => $endAt,
+            'Booking_EndAt' => (clone $startAt)->addMinutes($durationMinutes),
+
+            'Booking_Status' => 'booked',
         ];
+    }
+
+    /**
+     * State: cancelled booking
+     */
+    public function cancelled(): static
+    {
+        return $this->state(fn() => [
+            'Booking_Status' => 'cancelled',
+            'Booking_CancelledAt' => now(),
+        ]);
     }
 }

@@ -7,23 +7,30 @@ use App\Models\Service;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Provider>
+ * @extends Factory<Provider>
  */
 class ProviderFactory extends Factory
 {
     protected $model = Provider::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        Service::factory()->create();
         return [
             'Provider_Name' => $this->faker->company(),
-            'Service_ID' => 1
+            'Provider_Timezone' => 'UTC',
+
+            // Relationship-driven FK
+            'Service_ID' => Service::factory(),
         ];
+    }
+
+    /**
+     * Attach provider to an existing service instead of creating a new one
+     */
+    public function forService(Service $service): static
+    {
+        return $this->state(fn() => [
+            'Service_ID' => $service->Service_ID,
+        ]);
     }
 }
