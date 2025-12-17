@@ -29,7 +29,7 @@ class BookingFactory extends Factory
 
         // Offset each factory instance by 30-minute slots
         $startAt = (clone $base)->addMinutes(
-            $this->faker->unique()->numberBetween(0, 16) * 30
+            $this->faker->numberBetween(0, 16) * 30
         );
 
         return [
