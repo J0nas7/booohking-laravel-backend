@@ -30,11 +30,14 @@ class BookingsSeeder extends Seeder
             ->forService($services->random())
             ->create();
 
-        // Create deterministic, non-overlapping demo bookings
-        $startAt = Carbon::tomorrow()->setHour(9)->setMinute(0)->setSecond(0);
-
         foreach ($providers as $provider) {
             $service = $services->random();
+
+            // Create deterministic, non-overlapping demo bookings
+            $startAt = Carbon::tomorrow()
+                ->setHour(9)
+                ->setMinute(0)
+                ->setSecond(0);
 
             // 3 bookings per provider, sequential (no overlaps)
             for ($i = 0; $i < 3; $i++) {

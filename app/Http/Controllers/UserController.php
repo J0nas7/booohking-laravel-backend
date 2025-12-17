@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserController extends BaseController
 {
-    use AuthService;
-
     protected string $modelClass = User::class;
 
     protected array $with = [];

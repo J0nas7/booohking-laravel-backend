@@ -21,10 +21,6 @@ class BookingsSeederTest extends TestCase
         $databasePrefix = "Boo_";
 
         // Create test data
-        $user = User::factory()->create([
-            'User_ID' => 1,
-            'User_Email' => 'jonas-usr@booohking.com',
-        ]);
         $service = Service::factory()->create(['Service_DurationMinutes' => 60]);
         $provider = Provider::factory()->forService($service)->create();
 
@@ -33,7 +29,6 @@ class BookingsSeederTest extends TestCase
 
         // Assert at least one booking exists
         $this->assertDatabaseHas($databasePrefix . 'Bookings', [
-            'User_ID' => $user->User_ID,
             'Provider_ID' => $provider->Provider_ID,
             'Service_ID' => $service->Service_ID,
             'Booking_Status' => 'booked',

@@ -2,106 +2,98 @@
 
 namespace App\Services;
 
+use App\Actions\RegisterUser\RegisterUser;
+use App\Helpers\ApiResponse;
 use App\Mail\ForgotPasswordMail;
-use App\Mail\WelcomeEmail;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Contracts\Hashing\Hasher;
+use App\Helpers\ServiceResponse;
 
-trait AuthService
+class AuthService
 {
+    protected Mailer $mail;
+    protected Hasher $hasher;
+
+    // Dependency Injection
+    public function __construct(
+        Mailer $mail,
+        Hasher $hasher,
+        protected RegisterUser $registerUser
+    ) {
+        $this->mail = $mail;
+        $this->hasher = $hasher;
+    }
+
+    // Register a new user
     /**
-     * Register a new user.
-     *
      * @param array $data
-     * @return array
+     * @return ServiceResponse
      */
-    public function registerUser(array $data)
+    public function registerUser(array $data): ServiceResponse
+    {
+        return $this->registerUser->execute($data);
+    }
+
+    /**
+     * @param array $data
+     * @return ServiceResponse
+     */
+    public function activateAccount(array $data): ServiceResponse
     {
         // Define validation rules
-        $rules = [
-            'acceptTerms'    => 'required|accepted', // must be yes/on/1/true
-            'User_Email'      => 'required|email|unique:Boo_Users,User_Email',
-            'User_Password'   => 'required|min:6|confirmed', // expects userPassword_confirmation
-            'User_Name'      => 'required|string|max:255',
-            'User_Role'       => 'nullable|in:ROLE_ADMIN,ROLE_USER', // optional, defaults to ROLE_USER
-        ];
+        $rules = ['token' => 'required|string'];
 
         // Run validation
         $validator = Validator::make($data, $rules);
 
         // Return validation errors if any
         if ($validator->fails()) {
-            return ['errors' => $validator->errors()];
+            return new ServiceResponse(
+                errors: $validator->errors()->toArray(),
+                status: 400
+            );
         }
 
-        // Determine which keys exist in the DB (fillable)
-        $fillable = (new User())->getFillable();
-        $userData = [];
+        // Find the user by verification token
+        $user = User::where('User_Email_Verification_Token', $data['token'])->first();
 
-        foreach ($fillable as $column) {
-            if (isset($data[$column])) {
-                $userData[$column] = $data[$column];
-            }
+        if (!$user) {
+            return new ServiceResponse(
+                errors: ['token' => 'Invalid verification token']
+            );
         }
 
-        // Hash password if present
-        if (isset($userData['User_Password'])) {
-            $userData['User_Password'] = Hash::make($userData['User_Password']);
-        }
-
-        // Set default role if not provided
-        if (!isset($userData['User_Role'])) {
-            $userData['User_Role'] = 'ROLE_USER';
-        }
-
-        // Create the user
-        $user = User::create($userData);
-
-        // Generate verification token
-        $registerToken = Str::random(16);
-        $user->User_Email_Verification_Token = $registerToken;
-        $user->User_Email_VerifiedAt = null;
+        // Update user email verification details
+        $user->User_Email_VerifiedAt = now();
+        $user->User_Email_Verification_Token = null;
         $user->save();
 
-        // -------------------------------
-        // Send welcome email
-        // -------------------------------
-        try {
-            Mail::to($user->User_Email)->send(new WelcomeEmail($user, $registerToken));
-            $emailStatus = 'Email sent successfully.';
-            $registerToken = "";
-        } catch (\Exception $e) {
-            // Log the error and still return success
-            Log::error('Failed to send registration email: ' . $e->getMessage());
-            $emailStatus = 'Failed to send email: ' . $e->getMessage();
-        }
-
-        // Return success response
-        return [
-            'success' => true,
-            'message' => 'User was created.',
-            'email_status' => $emailStatus,
-            'user' => $user,
-            'token' => $registerToken
-        ];
+        // Return a success message
+        return new ServiceResponse(
+            message: 'Email verified successfully'
+        );
     }
 
     /**
      * Authenticate a user and generate a JWT.
      *
      * @param array $credentials
-     * @return array
+     * @return ServiceResponse
      */
-    public function authenticateUser(array $credentials)
+    public function authenticateUser(array $credentials): ServiceResponse
     {
         if (!$token = Auth::guard('api')->attempt($credentials)) {
-            return ['error' => 'Invalid email or password'];
+            return new ServiceResponse(
+                error: 'Invalid email or password',
+                status: 401
+            );
         }
 
         // Get the authenticated user
@@ -109,27 +101,38 @@ trait AuthService
 
         // Check if email is verified
         if (!$user->User_Email_VerifiedAt) {
-            return ['error' => 'Please verify your email before logging in.'];
+            return new ServiceResponse(
+                error: 'Please verify your email before logging in.',
+                status: 401
+            );
         }
 
-        return [
-            'success' => true,
-            'message' => 'Login was successful',
-            'data' => [
+        return new ServiceResponse(
+            data: [
                 'user' => Auth::guard('api')->user(),
                 'accessToken' => $token
-            ]
-        ];
+            ],
+            message: 'User logged in successfully'
+        );
     }
 
-    public function sendResetToken(array $data)
+    /**
+     * @param array $data
+     * @return ServiceResponse
+     */
+    public function sendResetToken(array $data): ServiceResponse
     {
-        $validator = Validator::make($data, [
-            'User_Email' => 'required|email|exists:Boo_Users,User_Email',
-        ]);
+        // Define validation rules
+        $rules = ['User_Email' => 'required|email|exists:Boo_Users,User_Email'];
+
+        // Run validation
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return ['errors' => $validator->errors()];
+            return new ServiceResponse(
+                errors: $validator->errors()->toArray(),
+                status: 400
+            );
         }
 
         // Generate 16-character alphanumeric token
@@ -142,7 +145,7 @@ trait AuthService
 
         // Send email using Mailable
         try {
-            Mail::to($user->User_Email)->send(new ForgotPasswordMail($user, $token));
+            $this->mail->to($user->User_Email)->send(new ForgotPasswordMail($user, $token));
             $emailStatus = 'Email sent successfully.';
             $token = "";
         } catch (\Exception $e) {
@@ -152,59 +155,194 @@ trait AuthService
         }
 
         // Return success response
-        return [
-            'success' => true,
-            'message' => 'Password reset token sent.',
-            'email_status' => $emailStatus,
-            'user' => $user,
-            'token' => $token
-        ];
+        return new ServiceResponse(
+            data: [
+                'email_status' => $emailStatus,
+                'user' => $user,
+                'token' => $token
+            ],
+            message: 'Password reset token sent.',
+        );
     }
 
-    public function resetPasswordWithToken(array $data)
+    /**
+     * @param array $data
+     * @return ServiceResponse
+     */
+    public function resetPasswordWithToken(array $data): ServiceResponse
     {
-        $validator = Validator::make($data, [
+        // Define validation rules
+        $rules = [
             'User_Remember_Token' => 'required|string|size:16',
             'New_User_Password' => 'required|string|min:6|confirmed',
-        ]);
+        ];
+
+        // Run validation
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return ['errors' => $validator->errors()];
+            return new ServiceResponse(
+                errors: $validator->errors()->toArray(),
+                status: 400
+            );
         }
 
         $user = User::where('User_Remember_Token', $data['User_Remember_Token'])->first();
 
         if (!$user) {
-            return ['error' => 'Invalid token.'];
+            return new ServiceResponse(
+                error: 'Invalid token.',
+                status: 401
+            );
         }
 
         // Update the password
-        $user->User_Password = Hash::make($data['New_User_Password']);
+        $user->User_Password = $this->hasher->make($data['New_User_Password']);
         $user->User_Remember_Token = null; // Clear token
         $user->save();
 
-        return ['success' => true, 'message' => 'Password has been reset successfully.'];
+        return new ServiceResponse(
+            message: 'Password reset successfully'
+        );
+    }
+
+    /**
+     * @return ServiceResponse
+     */
+    public function cloneToken(): ServiceResponse
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return new ServiceResponse(
+                error: 'Invalid or expired token',
+                status: 401
+            );
+        }
+
+        $newToken = JWTAuth::fromUser($user);
+
+        return new ServiceResponse(
+            data: [
+                'user' => $user,
+                'accessToken' => $newToken
+            ],
+            message: 'New token generated successfully'
+        );
+    }
+
+    /**
+     * @return ServiceResponse
+     */
+    public function refreshJWT(): ServiceResponse
+    {
+        // Get the current token from header
+        $token = JWTAuth::getToken();
+
+        if (!$token) {
+            return new ServiceResponse(
+                error: 'Token not provided',
+                status: 401
+            );
+        }
+
+        // Refresh the token
+        $newToken = JWTAuth::refresh($token);
+
+        return new ServiceResponse(
+            data: [
+                'accessToken' => $newToken,
+                'token_type' => 'bearer',
+                'expires_in' => config('jwt.ttl') * 60,
+            ],
+            message: 'Token refreshed successfully'
+        );
     }
 
     /**
      * Logout the authenticated user.
      *
-     * @return bool
+     * @return ServiceResponse
      */
-    public function logoutUser()
+    public function logoutUser(): ServiceResponse
     {
         Auth::guard('api')->logout();
-        return true;
+        return new ServiceResponse(
+            message: 'Logged out successfully'
+        );
     }
 
     /**
      * Get the authenticated user.
      *
-     * @return User|null
+     * @return ServiceResponse
      */
-    public function getAuthenticatedUser()
+    public function getAuthenticatedUser(): ServiceResponse
     {
         $authUser = Auth::guard('api')->user();
-        return $authUser;
+        if (!$authUser) {
+            return new ServiceResponse(
+                error: 'Not authenticated',
+                status: 401
+            );
+        }
+
+        return new ServiceResponse(
+            data: [
+                'user' => $authUser
+            ],
+            message: 'Is logged in'
+        );
+    }
+
+    // ----------
+    // CACHE
+    // ----------
+    /**
+     * @param ServiceResponse $result
+     * @return ServiceResponse|null
+     */
+    public function getUserFromCache(ServiceResponse $result): ServiceResponse|null
+    {
+        $userId = $result->data['user']->User_ID;
+        $cacheKey = 'user:me:' . $userId;
+        $cachedData = Cache::get($cacheKey);
+
+        if (!$cachedData) {
+            return null; // cache miss
+        }
+
+        // Wrap cached data in a ServiceResponse
+        return new ServiceResponse(
+            data: $cachedData['data'],
+            message: $cachedData['message']
+        );
+    }
+
+    /**
+     * @param ServiceResponse $result
+     * @param int $cacheTime
+     * @return void
+     */
+    public function storeUserInCache(ServiceResponse $result, $cacheTime = 900)
+    {
+        $userId = $result->data['user']->User_ID;
+        $cacheKey = 'user:me:' . $userId;
+        $cacheData = [
+            'data' => $result->data,
+            'message' => $result->message,
+        ];
+        Cache::put($cacheKey, $cacheData, $cacheTime);
+    }
+
+    /**
+     * @param ServiceResponse $result
+     * @return void
+     */
+    public function forgetUserFromCache(ServiceResponse $result)
+    {
+        $userId = $result->data['user']->User_ID;
+        $cacheKey = 'user:me:' . $userId;
+        Cache::forget($cacheKey);
     }
 }

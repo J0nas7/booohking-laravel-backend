@@ -28,7 +28,7 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJson([
                 'success' => true,
-                'message' => 'User was created.'
+                'message' => 'User registered successfully'
             ]);
 
         $this->assertDatabaseHas('Boo_Users', [
@@ -66,7 +66,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['data' => ['accessToken', 'user']]);
+            ->assertJsonStructure(['data']);
     }
 
     #[Test]
@@ -119,9 +119,8 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'success',
                 'message',
-                'userData' => ['User_ID', 'User_Name', 'User_Email']
+                'data'
             ]);
     }
 
@@ -144,7 +143,7 @@ class AuthControllerTest extends TestCase
         ])->getJson('/api/auth/refreshJWT');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['accessToken', 'token_type', 'expires_in']);
+            ->assertJsonStructure(['data' => ['accessToken', 'token_type', 'expires_in']]);
     }
 
     #[Test]

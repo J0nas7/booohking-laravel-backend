@@ -10,8 +10,14 @@ class ServicesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create one service owner
-        $user = User::factory()->create();
+        // Get or create service owner
+        $user = User::firstOrCreate(
+            ['User_Email' => 'jonas-adm@booohking.com'],
+            [
+                'User_Name' => 'Admin',
+                'User_Password' => bcrypt('password'),
+            ]
+        );
 
         // Create 6 services owned by that user
         Service::factory()

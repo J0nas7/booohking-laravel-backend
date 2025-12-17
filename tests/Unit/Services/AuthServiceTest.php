@@ -7,25 +7,46 @@ use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\WelcomeEmail;
-use Illuminate\Support\Facades\Validator;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Contracts\Hashing\Hasher;
+use App\Actions\RegisterUser\RegisterUser;
+use App\Helpers\ServiceResponse;
+use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class AuthServiceTest extends TestCase
 {
     use RefreshDatabase;
-    use AuthService;
+
+    protected AuthService $authService;
+    protected Mailer&MockInterface $mailer;
+    protected Hasher&MockInterface $hasher;
+    protected RegisterUser&MockInterface $registerUser;
 
     // Mock the Auth and Mail facades in setUp
     protected function setUp(): void
     {
         parent::setUp();
-        Mail::fake(); // Fake mail sending so no real email is sent
         Auth::shouldReceive('guard')->andReturnSelf();
+
+        $this->mailer = Mockery::mock(Mailer::class);
+        $this->hasher = Mockery::mock(Hasher::class);
+        $this->registerUser = Mockery::mock(RegisterUser::class);
+
+        $this->authService = new AuthService(
+            $this->mailer,
+            $this->hasher,
+            $this->registerUser
+        );
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     #[Test]
@@ -39,16 +60,24 @@ class AuthServiceTest extends TestCase
             'User_Name' => 'test'
         ];
 
-        $result = $this->registerUser($data);
+        $expectedResult = new ServiceResponse(
+            data: [
+                'user' => (object)['User_Email' => 'test@example.com'],
+                'token' => 'dummy-token',
+                'email_status' => 'Email sent successfully.'
+            ],
+            message: 'User registered successfully'
+        );
 
-        $this->assertArrayHasKey('success', $result);
-        $this->assertEquals('User was created.', $result['message']);
-        $this->assertDatabaseHas('Boo_Users', ['User_Email' => 'test@example.com']);
+        $this->registerUser
+            ->shouldReceive('execute')
+            ->once()
+            ->with($data)
+            ->andReturn($expectedResult);
 
-        // Assert that a welcome email was "sent"
-        Mail::assertSent(WelcomeEmail::class, function (WelcomeEmail $mail) use ($data) {
-            return $mail->hasTo($data['User_Email']);
-        });
+        $result = $this->authService->registerUser($data);
+
+        $this->assertSame($expectedResult, $result);
     }
 
     #[Test]
@@ -56,23 +85,37 @@ class AuthServiceTest extends TestCase
     {
         $data = [
             'acceptTerms' => false,
-            'userEmail' => 'invalid-email',
-            'userPassword' => 'short',
-            'userFirstname' => '',
-            'userSurname' => '',
+            'User_Email' => 'invalid-email',
+            'User_Password' => 'short',
+            'User_Password_confirmation' => 'mismatch',
+            'User_Name' => ''
         ];
 
-        $result = $this->registerUser($data);
+        $expectedResult = new ServiceResponse(
+            errors: ['User_Email' => 'Invalid email', 'User_Password' => 'Too short'], // dummy validation errors
+            status: 422,
+            message: 'Validation failed'
+        );
 
-        $this->assertArrayHasKey('errors', $result);
+        $this->registerUser
+            ->shouldReceive('execute')
+            ->once()
+            ->with($data)
+            ->andReturn($expectedResult);
+
+        $result = $this->authService->registerUser($data);
+
+        $this->assertSame($expectedResult, $result);
     }
 
     #[Test]
     public function it_authenticates_a_user_and_returns_a_token()
     {
+        // ---- Arrange ----
         $user = User::factory()->create([
             'User_Email' => 'test@example.com',
-            'User_Password' => Hash::make('password123'),
+            'User_Password' => 'hashed-password',
+            'User_Email_VerifiedAt' => now(), // IMPORTANT
         ]);
 
         $credentials = [
@@ -89,11 +132,16 @@ class AuthServiceTest extends TestCase
             ->twice()
             ->andReturn($user);
 
-        $result = $this->authenticateUser($credentials);
+        // ---- Act ----
+        $result = $this->authService->authenticateUser($credentials);
 
-        $this->assertArrayHasKey('success', $result);
-        $this->assertEquals('Login was successful', $result['message']);
-        $this->assertEquals('fake-token', $result['data']['accessToken']);
+        // ---- Assert ----
+        /** @var \App\Helpers\ServiceResponse $result */
+        $this->assertObjectHasProperty('data', $result);
+        $this->assertObjectHasProperty('message', $result);
+        $this->assertArrayHasKey('user', $result->data);
+        $this->assertArrayHasKey('accessToken', $result->data);
+        $this->assertEquals('fake-token', $result->data['accessToken']);
     }
 
     #[Test]
@@ -109,34 +157,44 @@ class AuthServiceTest extends TestCase
             ->with($credentials)
             ->andReturn(false);
 
-        $result = $this->authenticateUser($credentials);
+        $result = $this->authService->authenticateUser($credentials);
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertEquals('Invalid email or password', $result['error']);
+        $this->assertObjectHasProperty('error', $result);
+        $this->assertEquals('Invalid email or password', $result->error);
     }
 
     #[Test]
     public function it_sends_a_password_reset_token()
     {
-        $user = User::factory()->create([
-            'User_Email' => 'test@example.com',
-        ]);
+        // ---- Arrange ----
+        $user = User::factory()->create(['User_Email' => 'test@example.com',]);
 
-        $data = [
-            'User_Email' => 'test@example.com',
-        ];
+        $data = ['User_Email' => 'test@example.com',];
 
-        // This will match the expectation set above
-        $result = $this->sendResetToken($data);
+        // Mailer expectations
+        $this->mailer
+            ->shouldReceive('to')
+            ->once()
+            ->with('test@example.com')
+            ->andReturnSelf();
 
-        $this->assertArrayHasKey('success', $result);
-        $this->assertEquals('Password reset token sent.', $result['message']);
+        $this->mailer
+            ->shouldReceive('send')
+            ->once()
+            ->with(Mockery::type(ForgotPasswordMail::class));
 
-        // Assert that the ForgotPasswordMail mailable was sent
-        Mail::assertSent(ForgotPasswordMail::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->User_Email)
-                && !empty($mail->token); // token was set
-        });
+        // ---- Act ----
+        $result = $this->authService->sendResetToken($data);
+
+        // ---- Assert ----
+        $this->assertObjectHasProperty('data', $result);
+        $this->assertObjectHasProperty('message', $result);
+        $this->assertEquals('Password reset token sent.', $result->message);
+
+        // Assert token was stored
+        $this->assertNotNull(
+            $user->fresh()->User_Remember_Token
+        );
     }
 
     #[Test]
@@ -146,14 +204,16 @@ class AuthServiceTest extends TestCase
             'User_Email' => 'nonexistent@example.com',
         ];
 
-        $result = $this->sendResetToken($data);
+        $result = $this->authService->sendResetToken($data);
 
-        $this->assertArrayHasKey('errors', $result);
+        $this->assertObjectHasProperty('errors', $result);
     }
 
     #[Test]
     public function it_resets_password_with_valid_token()
     {
+        // ---- Arrange ----
+        $password = "newpassword123";
         $user = User::factory()->create([
             'User_Email' => 'test@example.com',
             'User_Remember_Token' => 'ABC123ABC123ABC1',
@@ -161,16 +221,39 @@ class AuthServiceTest extends TestCase
 
         $data = [
             'User_Remember_Token' => 'ABC123ABC123ABC1',
-            'New_User_Password' => 'newpassword123',
-            'New_User_Password_confirmation' => 'newpassword123',
+            'New_User_Password' => $password,
+            'New_User_Password_confirmation' => $password,
         ];
 
-        $result = $this->resetPasswordWithToken($data);
+        // Hasher expectation
+        $this->hasher
+            ->shouldReceive('make')
+            ->once()
+            ->with($password)
+            ->andReturn('new-hashed-password');
 
-        $this->assertArrayHasKey('success', $result);
-        $this->assertEquals('Password has been reset successfully.', $result['message']);
-        $this->assertTrue(Hash::check('newpassword123', $user->fresh()->User_Password));
-        $this->assertNull($user->fresh()->User_Remember_Token);
+        // ---- Act ----
+        $result = $this->authService->resetPasswordWithToken($data);
+
+        // ---- Assert ----
+        $userFresh = User::find($user->User_ID);
+        $this->assertNull($result->errors);
+        $this->assertEquals('', $result->error);
+        $this->assertEquals(
+            'Password reset successfully',
+            $result->message
+        );
+
+        $this->assertDatabaseHas('Boo_Users', [
+            'User_ID' => $user->User_ID,
+            'User_Remember_Token' => null,
+        ]);
+
+        // Assert it looks like a bcrypt hash
+        $this->assertMatchesRegularExpression(
+            '/^\$2y\$\d{2}\$[\.\/A-Za-z0-9]{53}$/',
+            $userFresh->User_Password
+        );
     }
 
     #[Test]
@@ -187,10 +270,10 @@ class AuthServiceTest extends TestCase
             'New_User_Password_confirmation' => 'newpassword123',
         ];
 
-        $result = $this->resetPasswordWithToken($data);
+        $result = $this->authService->resetPasswordWithToken($data);
 
-        $this->assertArrayHasKey('error', $result);
-        $this->assertEquals('Invalid token.', $result['error']);
+        $this->assertObjectHasProperty('error', $result);
+        $this->assertEquals('Invalid token.', $result->error);
     }
 
     #[Test]
@@ -200,9 +283,9 @@ class AuthServiceTest extends TestCase
             ->once()
             ->andReturn(true);
 
-        $result = $this->logoutUser();
+        $result = $this->authService->logoutUser();
 
-        $this->assertTrue($result);
+        $this->assertObjectHasProperty('message', $result);
     }
 
     #[Test]
@@ -214,8 +297,8 @@ class AuthServiceTest extends TestCase
             ->once()
             ->andReturn($user);
 
-        $result = $this->getAuthenticatedUser();
+        $result = $this->authService->getAuthenticatedUser();
 
-        $this->assertEquals($user->User_Email, $result->User_Email);
+        $this->assertEquals($user->User_Email, $result->data['user']->User_Email);
     }
 }

@@ -2,29 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Organisation;
-use App\Models\Permission;
-use App\Models\TaskTimeTrack;
-use App\Models\TeamUserSeat;
+use App\Helpers\ApiResponse;
 use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    use AuthService;
+    protected $authService;
 
-    public function __construct()
+    public function __construct(AuthService $authService)
     {
-        $this->middleware('auth:api', ['except' => ['login', 'forgotPassword', 'resetPassword', 'register', 'activateAccount', 'ok']]);
+        $this->authService = $authService;
+        $this->middleware('auth:api', ['except' => ['login', 'forgotPassword', 'resetPassword', 'register', 'activate', 'ok']]);
     }
 
     /**
@@ -35,37 +28,14 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        $result = $this->registerUser($request->all());
-
-        if (isset($result['errors'])) {
-            return response()->json(['errors' => $result['errors']], 400);
-        }
-
-        return response()->json($result, 201);
+        $result = $this->authService->registerUser($request->all());
+        return ApiResponse::fromServiceResult($result);
     }
 
-    public function activateAccount(Request $request)
+    public function activate(Request $request)
     {
-        // Run validation
-        $data = $request->validate(['token' => 'required|string']);
-
-        $user = User::where('User_Email_Verification_Token', $data['token'])->first();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid verification token'
-            ], 400);
-        }
-
-        $user->User_Email_VerifiedAt = now();
-        $user->User_Email_Verification_Token = null;
-        $user->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Email verified successfully'
-        ], 200);
+        $result = $this->authService->activateAccount($request->all());
+        return ApiResponse::fromServiceResult($result);
     }
 
     /**
@@ -77,20 +47,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only(['User_Email', 'password']);
-        $result = $this->authenticateUser($credentials);
+        $result = $this->authService->authenticateUser($credentials);
 
-        if (isset($result['error'])) {
-            return response()->json([
-                'error' => $result['error'],
-                $credentials
-            ], 401);
+        if (!$result->error) {
+            $this->authService->forgetUserFromCache($result);
         }
 
-        $user = $result['data']['user'];
-        $cacheKey = 'user:me:' . $user->User_ID;
-        Cache::forget($cacheKey);
-
-        return response()->json($result, 200);
+        return ApiResponse::fromServiceResult($result);
     }
 
     /**
@@ -98,13 +61,8 @@ class AuthController extends Controller
      */
     public function forgotPassword(Request $request)
     {
-        $result = $this->sendResetToken($request->all());
-
-        if (isset($result['errors'])) {
-            return response()->json(['errors' => $result['errors']], 400);
-        }
-
-        return response()->json($result, 200);
+        $result = $this->authService->sendResetToken($request->all());
+        return ApiResponse::fromServiceResult($result);
     }
 
     /**
@@ -112,15 +70,8 @@ class AuthController extends Controller
      */
     public function resetPassword(Request $request)
     {
-        $result = $this->resetPasswordWithToken($request->all());
-
-        if (isset($result['errors'])) {
-            return response()->json(['errors' => $result['errors']], 400);
-        } elseif (isset($result['error'])) {
-            return response()->json(['error' => $result['error']], 401);
-        }
-
-        return response()->json($result, 200);
+        $result = $this->authService->resetPasswordWithToken($request->all());
+        return ApiResponse::fromServiceResult($result);
     }
 
     /**
@@ -129,79 +80,18 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function cloneToken(Request $request)
+    public function cloneToken()
     {
         try {
-            // Get user from incoming token
-            $user = Auth::guard('api')->user();
+            $result = $this->authService->cloneToken();
+            return ApiResponse::fromServiceResult($result);
+        } catch (\Throwable $e) {
+            $meta = config('app.debug')
+                ? ['exception' => $e->getMessage()]
+                : null;
 
-            if (!$user) {
-                return response()->json(['error' => 'Invalid or expired token'], 401);
-            }
-
-            // Create a new token for the same user (new device)
-            $newToken = JWTAuth::fromUser($user);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'New token generated successfully',
-                'data' => [
-                    'user' => $user,
-                    'accessToken' => $newToken,
-                    // Optional: implement refresh tokens if you use them
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to generate token', 'details' => $e->getMessage()], 500);
+            return ApiResponse::error('Failed to generate token', 401, $meta); // HTTP 401 Unauthorized
         }
-    }
-
-    /**
-     * Logout the authenticated user.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function logout()
-    {
-        $user = $this->getAuthenticatedUser();
-        $cacheKey = 'user:me:' . $user->User_ID;
-        Cache::forget($cacheKey);
-
-        $this->logoutUser();
-        return response()->json(['message' => 'Logged out successfully'], 200);
-    }
-
-    /**
-     * Get details of the authenticated user.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function me()
-    {
-        $user = $this->getAuthenticatedUser();
-
-        if (!$user) {
-            return response()->json(['error' => 'Not authenticated'], 401);
-        }
-
-        // Check if the user is cached
-        $cacheKey = 'user:me:' . $user->User_ID;
-        $cachedData = Cache::get($cacheKey);
-
-        if ($cachedData) {
-            return response()->json($cachedData, 200);
-        }
-
-        $responseData = [
-            "success" => true,
-            "message" => "Is logged in",
-            "userData" => $user
-        ];
-
-        // Cache for 15 minutes
-        Cache::put($cacheKey, $responseData, 900);
-
-        return response()->json($responseData, 200);
     }
 
     /**
@@ -213,25 +103,54 @@ class AuthController extends Controller
     public function refreshJWT(Request $request)
     {
         try {
-            // Get the current token from header
-            $token = JWTAuth::getToken();
+            $result = $this->authService->refreshJWT();
+            return ApiResponse::fromServiceResult($result);
+        } catch (\Throwable $e) {
+            $meta = config('app.debug')
+                ? ['exception' => $e->getMessage()]
+                : null;
 
-            if (!$token) {
-                return response()->json(['error' => 'Token not provided'], 401);
-            }
-
-            // Refresh the token
-            $newToken = JWTAuth::refresh($token);
-
-            return response()->json([
-                'accessToken' => $newToken,
-                'token_type' => 'bearer',
-                'expires_in' => config('jwt.ttl') * 60, // Convert minutes to seconds
-            ]);
-        } catch (TokenExpiredException $e) {
-            return response()->json(['error' => 'Token has expired and can no longer be refreshed'], 401);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Could not refresh token'], 500);
+            return ApiResponse::error('Failed to generate token', 401, $meta); // HTTP 401 Unauthorized
         }
+    }
+
+    /**
+     * Logout the authenticated user.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function logout()
+    {
+        $result = $this->authService->getAuthenticatedUser();
+        $this->authService->forgetUserFromCache($result);
+        $result = $this->authService->logoutUser();
+
+        return ApiResponse::fromServiceResult($result);
+    }
+
+    /**
+     * Get details of the authenticated user.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function me()
+    {
+        $result = $this->authService->getAuthenticatedUser();
+
+        if ($result->error || $result->errors) {
+            return ApiResponse::fromServiceResult($result);
+        }
+
+        // Check if the user is cached
+        $cachedData = $this->authService->getUserFromCache($result);
+
+        if ($cachedData) {
+            return ApiResponse::fromServiceResult($cachedData);
+        }
+
+        // Cache user for 15 minutes
+        $this->authService->storeUserInCache($result);
+
+        return ApiResponse::fromServiceResult($result);
     }
 }

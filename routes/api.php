@@ -49,7 +49,7 @@ Route::group(['middleware' => $publicApiMiddleware], function () {
     // ---- AuthController Routes ----
     Route::prefix('auth')->controller(AuthController::class)->group(function () {
         Route::post('register', 'register')->name('auth.register');
-        Route::post('activate-account', 'activateAccount');
+        Route::post('activate-account', 'activate');
         Route::post('login', 'login')->name('login')->middleware('throttle:login');
         Route::post('forgot-password', 'forgotPassword')->middleware('throttle:password-reset');
         Route::post('reset-password', 'resetPassword')->middleware('throttle:password-reset');

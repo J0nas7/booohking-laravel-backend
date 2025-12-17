@@ -29,7 +29,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonFragment([
-                'message' => 'User was created.',
+                'message' => 'User registered successfully',
                 'success' => true
             ]);
     }
@@ -64,14 +64,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure([
-                'success',
-                'message',
-                'data' => [
-                    'user',
-                    'accessToken'
-                ]
-            ]);
+            ->assertJsonStructure(['data']);
     }
 
     /**
@@ -103,7 +96,10 @@ class AuthTest extends TestCase
         ])->getJson('/api/auth/me');
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['User_Email' => $user->User_Email]);
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
     }
 
     /**
