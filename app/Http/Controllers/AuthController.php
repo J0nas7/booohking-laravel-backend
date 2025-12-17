@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
-use App\Models\User;
+use App\Http\Requests\ActivateRequest;
+use App\Http\Requests\SendResetTokenRequest;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -32,9 +31,9 @@ class AuthController extends Controller
         return ApiResponse::fromServiceResult($result);
     }
 
-    public function activate(Request $request)
+    public function activate(ActivateRequest $request)
     {
-        $result = $this->authService->activateAccount($request->all());
+        $result = $this->authService->activateAccount($request->validated());
         return ApiResponse::fromServiceResult($result);
     }
 
@@ -56,12 +55,14 @@ class AuthController extends Controller
         return ApiResponse::fromServiceResult($result);
     }
 
+    // Send password reset token.
     /**
-     * Send password reset token.
+     * @param SendResetTokenRequest $request
+     * @return JsonResponse
      */
-    public function forgotPassword(Request $request)
+    public function forgotPassword(SendResetTokenRequest $request)
     {
-        $result = $this->authService->sendResetToken($request->all());
+        $result = $this->authService->sendResetToken($request->validated());
         return ApiResponse::fromServiceResult($result);
     }
 

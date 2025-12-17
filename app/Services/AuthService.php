@@ -15,6 +15,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Hashing\Hasher;
 use App\Helpers\ServiceResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AuthService
 {
@@ -31,7 +32,6 @@ class AuthService
         $this->hasher = $hasher;
     }
 
-    // Register a new user
     /**
      * @param array $data
      * @return ServiceResponse
@@ -41,32 +41,19 @@ class AuthService
         return $this->registerUser->execute($data);
     }
 
+    // Activate the user's email account using the verification token.
     /**
-     * @param array $data
+     * @param array $validated
      * @return ServiceResponse
      */
-    public function activateAccount(array $data): ServiceResponse
+    public function activateAccount(array $validated): ServiceResponse
     {
-        // Define validation rules
-        $rules = ['token' => 'required|string'];
-
-        // Run validation
-        $validator = Validator::make($data, $rules);
-
-        // Return validation errors if any
-        if ($validator->fails()) {
-            return new ServiceResponse(
-                errors: $validator->errors()->toArray(),
-                status: 400
-            );
-        }
-
         // Find the user by verification token
-        $user = User::where('User_Email_Verification_Token', $data['token'])->first();
+        $user = User::where('User_Email_Verification_Token', $validated['token'])->first();
 
         if (!$user) {
             return new ServiceResponse(
-                errors: ['token' => 'Invalid verification token']
+                error: 'Invalid verification token'
             );
         }
 
@@ -120,49 +107,44 @@ class AuthService
      * @param array $data
      * @return ServiceResponse
      */
-    public function sendResetToken(array $data): ServiceResponse
+    public function sendResetToken(array $validated): ServiceResponse
     {
-        // Define validation rules
-        $rules = ['User_Email' => 'required|email|exists:Boo_Users,User_Email'];
+        try {
+            // Generate 16-character alphanumeric token
+            $token = Str::random(16);
 
-        // Run validation
-        $validator = Validator::make($data, $rules);
+            // Update user with the reset token
+            $user = User::where('User_Email', $validated['User_Email'])->firstOrFail();
+            $user->User_Remember_Token = $token;
+            $user->save();
 
-        if ($validator->fails()) {
+            // Send email using Mailable
+            try {
+                $this->mail->to($user->User_Email)->send(new ForgotPasswordMail($user, $token));
+                $emailStatus = 'Email sent successfully.';
+                $token = "";
+            } catch (\Exception $e) {
+                // Log the error and still return success
+                Log::error('Failed to send registration email: ' . $e->getMessage());
+                $emailStatus = 'Failed to send email: ' . $e->getMessage();
+            }
+
+            // Return success response
             return new ServiceResponse(
-                errors: $validator->errors()->toArray(),
-                status: 400
+                data: [
+                    'email_status' => $emailStatus,
+                    'user' => $user,
+                    'token' => $token
+                ],
+                message: 'Password reset token sent.',
+            );
+        } catch (ModelNotFoundException $e) {
+            // If user is not found, return an error response with a 404 status
+            return new ServiceResponse(
+                errors: ['User_Email' => 'User not found.'],
+                status: 404
             );
         }
-
-        // Generate 16-character alphanumeric token
-        $token = Str::random(16);
-
-        // Update user with the reset token
-        $user = User::where('User_Email', $data['User_Email'])->first();
-        $user->User_Remember_Token = $token;
-        $user->save();
-
-        // Send email using Mailable
-        try {
-            $this->mail->to($user->User_Email)->send(new ForgotPasswordMail($user, $token));
-            $emailStatus = 'Email sent successfully.';
-            $token = "";
-        } catch (\Exception $e) {
-            // Log the error and still return success
-            Log::error('Failed to send registration email: ' . $e->getMessage());
-            $emailStatus = 'Failed to send email: ' . $e->getMessage();
-        }
-
-        // Return success response
-        return new ServiceResponse(
-            data: [
-                'email_status' => $emailStatus,
-                'user' => $user,
-                'token' => $token
-            ],
-            message: 'Password reset token sent.',
-        );
     }
 
     /**
@@ -231,6 +213,7 @@ class AuthService
         );
     }
 
+    // TODO TESTING
     /**
      * @return ServiceResponse
      */
@@ -298,6 +281,7 @@ class AuthService
     // ----------
     // CACHE
     // ----------
+    // TODO TESTING
     /**
      * @param ServiceResponse $result
      * @return ServiceResponse|null
@@ -319,6 +303,7 @@ class AuthService
         );
     }
 
+    // TODO TESTING
     /**
      * @param ServiceResponse $result
      * @param int $cacheTime
@@ -335,6 +320,7 @@ class AuthService
         Cache::put($cacheKey, $cacheData, $cacheTime);
     }
 
+    // TODO TESTING
     /**
      * @param ServiceResponse $result
      * @return void
