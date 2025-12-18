@@ -216,7 +216,6 @@ class AuthService
         );
     }
 
-    // TODO TESTING
     // Refreshes the current JWT token.
     /**
      * @return ServiceResponse
@@ -281,9 +280,8 @@ class AuthService
     }
 
     // ----------
-    // CACHE
+    // CACHE-RELATED
     // ----------
-    // TODO TESTING
     // Retrieves user data from the cache.
     /**
      * @param ServiceResponse $result
@@ -291,12 +289,17 @@ class AuthService
      */
     public function getUserFromCache(ServiceResponse $result): ServiceResponse|null
     {
+        // Check if 'user' key exists in the data array
+        if (!isset($result->data['user'])) {
+            return null; // Return null if user data is missing
+        }
+
         $userId = $result->data['user']->User_ID;
         $cacheKey = 'user:me:' . $userId;
         $cachedData = Cache::get($cacheKey);
 
-        if (!$cachedData) {
-            return null; // cache miss
+        if (!$cachedData || !isset($cachedData['data'], $cachedData['message'])) {
+            return null; // Return null if cache data is missing or malformed (missing 'data' or 'message')
         }
 
         // Wrap cached data in a ServiceResponse
@@ -306,7 +309,6 @@ class AuthService
         );
     }
 
-    // TODO TESTING
     // Stores user data in the cache.
     /**
      * @param ServiceResponse $result
@@ -315,6 +317,10 @@ class AuthService
      */
     public function storeUserInCache(ServiceResponse $result, $cacheTime = 900)
     {
+        if (!isset($result->data['user'])) {
+            return; // Return early if user data is missing
+        }
+
         $userId = $result->data['user']->User_ID;
         $cacheKey = 'user:me:' . $userId;
         $cacheData = [
@@ -324,7 +330,6 @@ class AuthService
         Cache::put($cacheKey, $cacheData, $cacheTime);
     }
 
-    // TODO TESTING
     // Removes the user data from the cache.
     /**
      * @param ServiceResponse $result
@@ -332,6 +337,10 @@ class AuthService
      */
     public function forgetUserFromCache(ServiceResponse $result)
     {
+        if (!isset($result->data['user'])) {
+            return; // Return early if user data is missing
+        }
+
         $userId = $result->data['user']->User_ID;
         $cacheKey = 'user:me:' . $userId;
         Cache::forget($cacheKey);

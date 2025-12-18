@@ -12,6 +12,7 @@ class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    // ==== register() ====
     #[Test]
     public function user_can_register_successfully()
     {
@@ -53,6 +54,7 @@ class AuthControllerTest extends TestCase
             ->assertJsonStructure(['errors']);
     }
 
+    // ==== login() ====
     #[Test]
     public function user_can_login_successfully()
     {
@@ -86,6 +88,31 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
+    public function login_is_throttled_after_too_many_attempts()
+    {
+        $user = User::factory()->create([
+            'User_Password' => bcrypt('password123'),
+        ]);
+
+        // 5 allowed attempts
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/auth/login', [
+                'User_Email' => $user->User_Email,
+                'password' => 'wrongpassword',
+            ])->assertStatus(401);
+        }
+
+        // 6th attempt should be throttled
+        $response = $this->postJson('/api/auth/login', [
+            'User_Email' => $user->User_Email,
+            'password' => 'wrongpassword',
+        ]);
+
+        $response->assertStatus(429);
+    }
+
+    // ==== logout() ====
+    #[Test]
     public function authenticated_user_can_logout()
     {
         $user = User::factory()->create();
@@ -107,6 +134,7 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    // ==== me() ====
     #[Test]
     public function authenticated_user_can_get_me()
     {
@@ -132,6 +160,7 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    // ==== refreshJWT() ====
     #[Test]
     public function user_can_refresh_jwt_token()
     {
@@ -146,6 +175,7 @@ class AuthControllerTest extends TestCase
             ->assertJsonStructure(['data' => ['accessToken', 'token_type', 'expires_in']]);
     }
 
+    // ==== cloneToken() ====
     #[Test]
     public function clone_token_generates_new_token_for_authenticated_user()
     {
@@ -170,46 +200,6 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function login_is_throttled_after_too_many_attempts()
-    {
-        $user = User::factory()->create([
-            'User_Password' => bcrypt('password123'),
-        ]);
-
-        // 5 allowed attempts
-        for ($i = 0; $i < 5; $i++) {
-            $this->postJson('/api/auth/login', [
-                'User_Email' => $user->User_Email,
-                'password' => 'wrongpassword',
-            ])->assertStatus(401);
-        }
-
-        // 6th attempt should be throttled
-        $response = $this->postJson('/api/auth/login', [
-            'User_Email' => $user->User_Email,
-            'password' => 'wrongpassword',
-        ]);
-
-        $response->assertStatus(429);
-    }
-
-    #[Test]
-    public function password_reset_is_throttled()
-    {
-        for ($i = 0; $i < 3; $i++) {
-            $this->postJson('/api/auth/forgot-password', [
-                'User_Email' => 'nonexistent@example.com',
-            ]);
-        }
-
-        $response = $this->postJson('/api/auth/forgot-password', [
-            'User_Email' => 'nonexistent@example.com',
-        ]);
-
-        $response->assertStatus(429);
-    }
-
-    #[Test]
     public function jwt_endpoints_are_throttled_after_too_many_requests()
     {
         $user = User::factory()->create();
@@ -229,5 +219,71 @@ class AuthControllerTest extends TestCase
         ])->postJson('/api/auth/clone-token');
 
         $response->assertStatus(429);
+    }
+
+    // ==== forgotPassword() ====
+    #[Test]
+    public function password_reset_is_throttled()
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $this->postJson('/api/auth/forgot-password', [
+                'User_Email' => 'nonexistent@example.com',
+            ]);
+        }
+
+        $response = $this->postJson('/api/auth/forgot-password', [
+            'User_Email' => 'nonexistent@example.com',
+        ]);
+
+        $response->assertStatus(429);
+    }
+
+    // ==== activate() ====
+    #[Test]
+    public function user_can_activate_account()
+    {
+        $user = User::factory()->unverified()->create([
+            'User_Email' => 'test@example.com',
+            'User_Email_Verification_Token' => 'valid-token',
+        ]);
+
+        $response = $this->postJson('/api/auth/activate-account', [
+            'token' => 'valid-token',
+        ]);
+
+        // We only assert structure/status because AuthService handles logic
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'message',
+            ]);
+    }
+
+    // ==== resetPassword() ====
+    #[Test]
+    public function user_can_reset_password_with_valid_token()
+    {
+        // ==== Arrange ====
+        $password = "newpassword123";
+        $user = User::factory()->create([
+            'User_Email' => 'test@example.com',
+            'User_Remember_Token' => 'ABC123ABC123ABC1',
+        ]);
+
+        $data = [
+            'User_Remember_Token' => 'ABC123ABC123ABC1',
+            'New_User_Password' => $password,
+            'New_User_Password_confirmation' => $password,
+        ];
+
+        // ==== Act ====
+        $response = $this->postJson('/api/auth/reset-password', $data);
+
+        // ==== Assert ====
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'message',
+            ]);
     }
 }

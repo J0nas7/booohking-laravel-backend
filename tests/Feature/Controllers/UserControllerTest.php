@@ -39,6 +39,7 @@ class UserControllerTest extends TestCase
         return ['Authorization' => "Bearer $token"];
     }
 
+    // ==== index() ====
     #[Test]
     public function can_list_users()
     {
@@ -53,6 +54,7 @@ class UserControllerTest extends TestCase
             ]);
     }
 
+    // ==== store() ====
     #[Test]
     public function can_create_user()
     {
@@ -99,6 +101,7 @@ class UserControllerTest extends TestCase
             ->assertJsonValidationErrors(['User_Email']);
     }
 
+    // ==== show() ====
     #[Test]
     public function admin_can_view_single_user()
     {
@@ -122,6 +125,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    // ==== update() ====
     #[Test]
     public function can_update_user()
     {
@@ -147,6 +151,7 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    // ==== destroy() ====
     #[Test]
     public function can_delete_user()
     {

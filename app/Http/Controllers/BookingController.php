@@ -64,7 +64,7 @@ class BookingController extends BaseController
 
         // Pagination params
         $page = (int) $request->query('page', 1);
-        $perPage = (int) $request->query('perPage', 20); // adjust default as needed
+        $perPage = max((int) $request->query('perPage', 20), 1);
 
         $slots = \App\Services\BookingService::generateAvailableSlots($provider, 30, $slotDuration, $serviceId);
 
@@ -90,7 +90,7 @@ class BookingController extends BaseController
     {
         // Pagination
         $page = (int) $request->query('page', 1);
-        $perPage = (int) $request->query('perPage', 10);
+        $perPage = max((int) $request->query('perPage', 10), 1);
 
         // Build query: all bookings for this user
         $query = Booking::with($this->with)
@@ -99,12 +99,6 @@ class BookingController extends BaseController
 
         // Paginate results
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-
-        // Convert UTC -> CET on the fly
-        // $convertedItems = \App\Services\BookingService::convertUTCtoCET($paginated);
-
-        // // Replace the collection inside paginator
-        // $paginated->setCollection($convertedItems);
 
         // Empty case
         if ($paginated->isEmpty()) {
@@ -146,7 +140,7 @@ class BookingController extends BaseController
 
         // Get pagination parameters from query string, default to page 1, 10 items per page
         $page = (int) $request->query('page', 1);
-        $perPage = (int) $request->query('perPage', 10);
+        $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = ($this->modelClass)::query()->with($this->with);
 
@@ -158,12 +152,6 @@ class BookingController extends BaseController
         // Paginate the results
         $paginated = $query->orderBy('Booking_StartAt', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
-
-        // Convert UTC -> CET on the fly
-        // $convertedItems = \App\Services\BookingService::convertUTCtoCET($paginated);
-
-        // // Replace the collection inside paginator
-        // $paginated->setCollection($convertedItems);
 
         return response()->json($paginated);
     }

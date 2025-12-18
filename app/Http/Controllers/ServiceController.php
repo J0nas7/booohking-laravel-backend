@@ -37,7 +37,7 @@ class ServiceController extends BaseController
     {
         // Pagination
         $page = (int) $request->query('page', 1);
-        $perPage = (int) $request->query('perPage', 10);
+        $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = Service::with($this->with)
             ->where('User_ID', $user->User_ID)
@@ -77,7 +77,7 @@ class ServiceController extends BaseController
     {
         // Get pagination parameters from query string, defaults: page=1, perPage=10
         $page = (int) $request->query('page', 1);
-        $perPage = (int) $request->query('perPage', 10);
+        $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = ($this->modelClass)::query();
 

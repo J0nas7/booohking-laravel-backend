@@ -39,6 +39,7 @@ class BookingControllerTest extends TestCase
         return ['Authorization' => "Bearer $token"];
     }
 
+    // ==== index() ====
     #[Test]
     public function admin_can_list_all_bookings()
     {
@@ -65,6 +66,7 @@ class BookingControllerTest extends TestCase
         $this->assertEquals($this->user->User_ID, $response->json('data')[0]['User_ID']);
     }
 
+    // ==== store() ====
     #[Test]
     public function user_can_create_booking()
     {
@@ -116,6 +118,7 @@ class BookingControllerTest extends TestCase
             ->assertJson(['error' => 'This time slot is already booked.']);
     }
 
+    // ==== show() ====
     #[Test]
     public function user_can_view_own_booking()
     {
@@ -139,6 +142,7 @@ class BookingControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    // ==== destroy() ====
     #[Test]
     public function admin_can_delete_any_booking()
     {
@@ -174,5 +178,194 @@ class BookingControllerTest extends TestCase
             ->deleteJson("/api/bookings/{$booking->Booking_ID}");
 
         $response->assertStatus(403);
+    }
+
+    // ==== availableSlots() ====
+    #[Test]
+    public function it_returns_available_slots_for_provider()
+    {
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->getJson("/api/bookings/{$this->provider->Provider_ID}/available-slots");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => ['date', 'start', 'end']
+                ],
+                'total',
+                'pagination' => ['total', 'perPage', 'currentPage', 'lastPage']
+            ]);
+    }
+
+    #[Test]
+    public function it_excludes_booked_slots_for_provider()
+    {
+        $start = Carbon::tomorrow()->setHour(10);
+        $end = $start->copy()->addMinutes($this->service->Service_DurationMinutes);
+
+        Booking::factory()->create([
+            'Provider_ID' => $this->provider->Provider_ID,
+            'Booking_StartAt' => $start,
+            'Booking_EndAt' => $end,
+        ]);
+
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->getJson("/api/bookings/{$this->provider->Provider_ID}/available-slots?service_id={$this->service->Service_ID}");
+
+        $response->assertStatus(200);
+        $slots = $response->json('data');
+
+        foreach ($slots as $slot) {
+            $this->assertFalse(
+                $slot['start'] === $start->format('H:i') &&
+                    $slot['end'] === $end->format('H:i'),
+                'Booked slot was included in available slots'
+            );
+        }
+    }
+
+    #[Test]
+    public function it_returns_empty_when_provider_fully_booked()
+    {
+        $today = Carbon::tomorrow()->startOfDay();
+        for ($i = 0; $i < 24; $i++) {
+            $start = $today->copy()->addHours($i);
+            $end = $start->copy()->addMinutes($this->service->Service_DurationMinutes);
+
+            Booking::factory()->create([
+                'Provider_ID' => $this->provider->Provider_ID,
+                'Booking_StartAt' => $start,
+                'Booking_EndAt' => $end,
+            ]);
+        }
+
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->getJson("/api/bookings/{$this->provider->Provider_ID}/available-slots");
+
+        $response->assertStatus(200);
+        $this->assertEmpty($response->json('data'));
+    }
+
+    // ==== readBookingsByUserID() ====
+    #[Test]
+    public function it_reads_bookings_by_user_id()
+    {
+        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->getJson("/api/bookings/users/{$this->user->User_ID}");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Bookings found'
+            ]);
+    }
+
+    #[Test]
+    public function returns_404_when_user_has_no_bookings()
+    {
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->getJson("/api/bookings/users/999999"); // non-existent user
+
+        $response->assertStatus(404)
+            ->assertJsonFragment([
+                'message' => 'No query results for model [App\\Models\\User] 999999',
+            ]);
+    }
+
+    #[Test]
+    public function admin_can_read_any_users_bookings()
+    {
+        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+
+        $response = $this->withHeaders($this->authHeaders($this->admin))
+            ->getJson("/api/bookings/users/{$this->user->User_ID}");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Bookings found'
+            ]);
+    }
+
+    // ==== update() ====
+    #[Test]
+    public function user_can_update_their_own_booking()
+    {
+        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $newStart = Carbon::tomorrow()->setHour(14);
+        $newEnd = $newStart->copy()->addMinutes($this->service->Service_DurationMinutes);
+
+        $payload = [
+            'User_ID' => $this->user->User_ID,
+            'Provider_ID' => $this->provider->Provider_ID,
+            'Service_ID' => $this->service->Service_ID,
+            'Booking_StartAt' => $newStart->toDateTimeString(),
+            'Booking_EndAt' => $newEnd->toDateTimeString(),
+        ];
+
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->putJson("/api/bookings/{$booking->Booking_ID}", $payload);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'Booking_ID' => $booking->Booking_ID,
+                'User_ID' => $this->user->User_ID
+            ]);
+
+        $this->assertDatabaseHas('Boo_Bookings', [
+            'Booking_ID' => $booking->Booking_ID,
+            'Booking_StartAt' => $newStart,
+            'Booking_EndAt' => $newEnd,
+        ]);
+    }
+
+    #[Test]
+    public function user_cannot_update_others_booking()
+    {
+        $booking = Booking::factory()->create(['User_ID' => $this->admin->User_ID]);
+        $newStart = Carbon::tomorrow()->setHour(14);
+        $newEnd = $newStart->copy()->addMinutes($this->service->Service_DurationMinutes);
+
+        $payload = [
+            'User_ID' => $this->user->User_ID,
+            'Provider_ID' => $this->provider->Provider_ID,
+            'Service_ID' => $this->service->Service_ID,
+            'Booking_StartAt' => $newStart->toDateTimeString(),
+            'Booking_EndAt' => $newEnd->toDateTimeString(),
+        ];
+
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->putJson("/api/bookings/{$booking->Booking_ID}", $payload);
+
+        $response->assertStatus(403);
+    }
+
+    #[Test]
+    public function cannot_update_booking_to_overlapping_slot()
+    {
+        $existing = Booking::factory()->create([
+            'Provider_ID' => $this->provider->Provider_ID,
+            'Booking_StartAt' => Carbon::tomorrow()->setHour(10),
+            'Booking_EndAt' => Carbon::tomorrow()->setHour(11),
+        ]);
+
+        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+
+        $payload = [
+            'User_ID' => $this->user->User_ID,
+            'Provider_ID' => $this->provider->Provider_ID,
+            'Service_ID' => $this->service->Service_ID,
+            'Booking_StartAt' => Carbon::tomorrow()->setHour(10)->toDateTimeString(),
+            'Booking_EndAt' => Carbon::tomorrow()->setHour(11)->toDateTimeString(),
+        ];
+
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->putJson("/api/bookings/{$booking->Booking_ID}", $payload);
+
+        $response->assertStatus(422)
+            ->assertJson(['error' => 'This time slot is already booked.']);
     }
 }

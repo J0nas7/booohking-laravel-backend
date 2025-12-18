@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Services;
+namespace Tests\Unit\Services\BookingServiceTest;
 
 use Tests\TestCase;
 use App\Models\Provider;
@@ -13,14 +13,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 
-class BookingServiceTest extends TestCase
+class GenerateAvailableSlotsTest extends TestCase
 {
     use RefreshDatabase;
 
     protected function tearDown(): void
     {
         parent::tearDown();
-        // Clear any test now
         Carbon::setTestNow();
     }
 

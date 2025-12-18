@@ -32,6 +32,7 @@ class ProviderControllerTest extends TestCase
         return ['Authorization' => "Bearer $token"];
     }
 
+    // ---- index() ----
     #[Test]
     public function it_lists_providers_with_pagination()
     {
@@ -52,6 +53,41 @@ class ProviderControllerTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_empty_data_when_page_exceeds_total()
+    {
+        Provider::factory()->count(5)->create();
+
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson('/api/providers?page=100&perPage=5');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'current_page' => 100,
+                'data' => [],
+            ]);
+    }
+
+    #[Test]
+    public function it_falls_back_to_default_per_page_when_invalid()
+    {
+        Provider::factory()->count(5)->create();
+
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson('/api/providers?page=1&perPage=-5');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'current_page',
+                'data',
+                'per_page',
+                'total',
+            ]);
+
+        $this->assertLessThanOrEqual(5, count($response->json('data')));
+    }
+
+    // ---- show() ----
+    #[Test]
     public function it_shows_a_single_provider()
     {
         $provider = Provider::factory()->create();
@@ -66,6 +102,30 @@ class ProviderControllerTest extends TestCase
             ]);
     }
 
+    #[Test]
+    public function it_returns_404_for_non_existent_provider()
+    {
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson('/api/providers/999999');
+
+        $response->assertStatus(404);
+    }
+
+    #[Test]
+    public function it_returns_cached_provider_if_exists()
+    {
+        $provider = Provider::factory()->create();
+        \Illuminate\Support\Facades\Cache::put("model:provider:{$provider->Provider_ID}", $provider->toJson(), 3600);
+
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson("/api/providers/{$provider->Provider_ID}");
+
+        $response->assertStatus(200)
+            ->assertJson(['Provider_ID' => $provider->Provider_ID]);
+    }
+
+
+    // ---- store() ----
     #[Test]
     public function only_admin_can_create_provider()
     {
@@ -90,6 +150,27 @@ class ProviderControllerTest extends TestCase
     }
 
     #[Test]
+    public function store_requires_provider_name_and_service_id()
+    {
+        $response = $this->actingAs($this->admin, 'api')
+            ->postJson('/api/providers', []);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['Provider_Name', 'Service_ID']);
+    }
+
+    #[Test]
+    public function store_fails_if_service_id_does_not_exist()
+    {
+        $response = $this->actingAs($this->admin, 'api')
+            ->postJson('/api/providers', ['Provider_Name' => 'Test', 'Service_ID' => 999]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['Service_ID']);
+    }
+
+    // ---- update() ----
+    #[Test]
     public function only_admin_can_update_provider()
     {
         $provider = Provider::factory()->create();
@@ -113,6 +194,28 @@ class ProviderControllerTest extends TestCase
         $this->assertDatabaseHas('Boo_Providers', ['Provider_Name' => 'Updated Name']);
     }
 
+    #[Test]
+    public function update_returns_404_for_non_existent_provider()
+    {
+        $response = $this->actingAs($this->admin, 'api')
+            ->putJson('/api/providers/999999', ['Provider_Name' => 'Test', 'Service_ID' => 1]);
+
+        $response->assertStatus(404);
+    }
+
+    #[Test]
+    public function update_fails_with_invalid_service_id()
+    {
+        $provider = Provider::factory()->create();
+
+        $response = $this->actingAs($this->admin, 'api')
+            ->putJson("/api/providers/{$provider->Provider_ID}", ['Provider_Name' => 'Test', 'Service_ID' => 999]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['Service_ID']);
+    }
+
+    // ---- destroy() ----
     #[Test]
     public function only_admin_can_delete_provider()
     {
@@ -144,5 +247,105 @@ class ProviderControllerTest extends TestCase
 
         $response->assertStatus(400)
             ->assertJson(['message' => 'Cannot delete provider with existing bookings']);
+    }
+
+    #[Test]
+    public function destroy_returns_404_for_non_existent_provider()
+    {
+        $response = $this->actingAs($this->admin, 'api')
+            ->deleteJson('/api/providers/999999');
+
+        $response->assertStatus(404);
+    }
+
+    #[Test]
+    public function destroy_soft_deletes_multiple_providers()
+    {
+        $providers = Provider::factory()->count(3)->create();
+
+        foreach ($providers as $provider) {
+            $response = $this->actingAs($this->admin, 'api')
+                ->deleteJson("/api/providers/{$provider->Provider_ID}");
+
+            $response->assertStatus(200)
+                ->assertJson(['message' => 'Deleted successfully']);
+
+            $this->assertSoftDeleted('Boo_Providers', ['Provider_ID' => $provider->Provider_ID]);
+        }
+    }
+
+    // ---- readProvidersByServiceID() ----
+    #[Test]
+    public function it_reads_providers_by_service_id()
+    {
+        $service = Service::factory()->create();
+        $providers = Provider::factory()->count(3)->create(['Service_ID' => $service->Service_ID]);
+
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson("/api/providers/services/{$service->Service_ID}");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Providers found'
+            ])
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    '*' => [
+                        'Provider_ID',
+                        'Provider_Name',
+                        'Service_ID',
+                    ]
+                ],
+                'pagination' => ['total', 'perPage', 'currentPage', 'lastPage']
+            ]);
+    }
+
+    #[Test]
+    public function it_returns_404_when_no_providers_for_service()
+    {
+        $service = Service::factory()->create(); // no providers created
+
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson("/api/providers/services/{$service->Service_ID}");
+
+        $response->assertStatus(404)
+            ->assertJson([
+                'success' => false,
+                'message' => 'No providers found for this service',
+                'data' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'perPage' => 10,
+                    'currentPage' => 1,
+                    'lastPage' => 0,
+                ]
+            ]);
+    }
+
+    #[Test]
+    public function it_returns_404_when_requesting_page_beyond_last()
+    {
+        $service = Service::factory()->create();
+        Provider::factory()->count(3)->create(['Service_ID' => $service->Service_ID]);
+
+        // perPage = 2, lastPage = 2, request page 5
+        $response = $this->actingAs($this->user, 'api')
+            ->getJson("/api/providers/services/{$service->Service_ID}?page=5&perPage=2");
+
+        $response->assertStatus(404)
+            ->assertJson([
+                'success' => false,
+                'message' => 'No providers found for this service',
+                'data' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'perPage' => 2,
+                    'currentPage' => 5,
+                    'lastPage' => 0,
+                ]
+            ]);
     }
 }

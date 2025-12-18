@@ -41,7 +41,7 @@ class ProviderWorkingHourController extends BaseController
     {
         // Get pagination parameters from query string, default page 1, 10 items per page
         $page = (int) $request->query('page', 1);
-        $perPage = (int) $request->query('perPage', 10);
+        $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = ($this->modelClass)::with($this->with);
 

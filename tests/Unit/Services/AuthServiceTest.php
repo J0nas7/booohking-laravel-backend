@@ -6,7 +6,6 @@ use App\Services\AuthService;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Hashing\Hasher;
 use App\Actions\RegisterUser\RegisterUser;
-use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Mockery;
 use Mockery\MockInterface;

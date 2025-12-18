@@ -21,10 +21,9 @@ class ActivateAccountTest extends AuthServiceTest
     public function it_activates_the_user_email_successfully()
     {
         // ---- Arrange ----
-        $user = User::factory()->create([
+        $user = User::factory()->unverified()->create([
             'User_Email' => 'test@example.com',
             'User_Email_Verification_Token' => 'valid-token',
-            'User_Email_VerifiedAt' => null, // Email not yet verified
         ]);
 
         $validated = [

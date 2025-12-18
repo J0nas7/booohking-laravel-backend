@@ -114,27 +114,4 @@ class BookingService
 
         return $slots;
     }
-
-    // Convert paginated booking times from UTC to CET.
-    /**
-     * @param \Illuminate\Pagination\LengthAwarePaginator $paginated Paginated booking data
-     * @return \Illuminate\Support\Collection Converted booking data with CET times
-     */
-    public static function convertUTCtoCET($paginated)
-    {
-        // Convert UTC -> CET on the fly
-        $convertedItems = $paginated->getCollection()->transform(function ($booking) {
-            $booking->Booking_StartAt = $booking->Booking_StartAt
-                ? $booking->Booking_StartAt->setTimezone('Europe/Copenhagen')->format('Y-m-d H:i')
-                : null;
-
-            $booking->Booking_EndAt = $booking->Booking_EndAt
-                ? $booking->Booking_EndAt->setTimezone('Europe/Copenhagen')->format('Y-m-d H:i')
-                : null;
-
-            return $booking;
-        });
-
-        return $convertedItems;
-    }
 }
