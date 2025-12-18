@@ -32,6 +32,7 @@ class AuthService
         $this->hasher = $hasher;
     }
 
+    // Registers a new user, using action delegate.
     /**
      * @param array $data
      * @return ServiceResponse
@@ -68,9 +69,8 @@ class AuthService
         );
     }
 
+    // Authenticate a user and generate a JWT.
     /**
-     * Authenticate a user and generate a JWT.
-     *
      * @param array $credentials
      * @return ServiceResponse
      */
@@ -103,6 +103,7 @@ class AuthService
         );
     }
 
+    // Sends a password reset token to the user's email address.
     /**
      * @param array $data
      * @return ServiceResponse
@@ -147,6 +148,7 @@ class AuthService
         }
     }
 
+    // Resets the user's password using a provided reset token.
     /**
      * @param array $data
      * @return ServiceResponse
@@ -188,6 +190,7 @@ class AuthService
         );
     }
 
+    // Generates a new access token for the authenticated user.
     /**
      * @return ServiceResponse
      */
@@ -214,6 +217,7 @@ class AuthService
     }
 
     // TODO TESTING
+    // Refreshes the current JWT token.
     /**
      * @return ServiceResponse
      */
@@ -242,9 +246,8 @@ class AuthService
         );
     }
 
+    // Logout the authenticated user.
     /**
-     * Logout the authenticated user.
-     *
      * @return ServiceResponse
      */
     public function logoutUser(): ServiceResponse
@@ -255,9 +258,8 @@ class AuthService
         );
     }
 
+    // Get the authenticated user.
     /**
-     * Get the authenticated user.
-     *
      * @return ServiceResponse
      */
     public function getAuthenticatedUser(): ServiceResponse
@@ -282,6 +284,7 @@ class AuthService
     // CACHE
     // ----------
     // TODO TESTING
+    // Retrieves user data from the cache.
     /**
      * @param ServiceResponse $result
      * @return ServiceResponse|null
@@ -304,6 +307,7 @@ class AuthService
     }
 
     // TODO TESTING
+    // Stores user data in the cache.
     /**
      * @param ServiceResponse $result
      * @param int $cacheTime
@@ -321,6 +325,7 @@ class AuthService
     }
 
     // TODO TESTING
+    // Removes the user data from the cache.
     /**
      * @param ServiceResponse $result
      * @return void

@@ -12,9 +12,8 @@ use Illuminate\Support\Facades\Log;
 
 class BookingService
 {
+    // Generate available slots for a provider and service.
     /**
-     * Generate available slots for a provider and service.
-     *
      * @param Provider $provider
      * @param int $days Number of days ahead to generate slots (default 30)
      * @param int $slotDurationMinutes Duration of each slot in minutes (default 30)
@@ -116,9 +115,8 @@ class BookingService
         return $slots;
     }
 
+    // Convert paginated booking times from UTC to CET.
     /**
-     * Convert paginated booking times from UTC to CET.
-     *
      * @param \Illuminate\Pagination\LengthAwarePaginator $paginated Paginated booking data
      * @return \Illuminate\Support\Collection Converted booking data with CET times
      */
