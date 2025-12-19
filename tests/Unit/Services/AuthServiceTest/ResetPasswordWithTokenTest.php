@@ -71,7 +71,6 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
         $this->assertEquals('', $result->error);
         $this->assertEquals('Password reset successfully.', $result->message);
         $this->assertTrue(Hash::check($newPassword, $userFresh->User_Password));
-        $this->assertNull($userFresh->User_Remember_Token);
     }
 
     #[Test]

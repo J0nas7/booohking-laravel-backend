@@ -124,8 +124,7 @@ class AuthService
             $validated,
             function (User $user, string $password) {
                 $user->forceFill([
-                    'User_Password' => $this->hasher->make($password),
-                    'User_Remember_Token' => null,
+                    'User_Password' => $this->hasher->make($password)
                 ])->save();
             }
         );

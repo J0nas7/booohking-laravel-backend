@@ -69,7 +69,6 @@ class UserTest extends TestCase
             'User_Name'             => 'Test User',
             'User_Password'         => 'password',
             'User_Password_confirmation' => 'password',
-            'User_Remember_Token'   => Str::random(10),
             'User_CreatedAt'        => now(),
             'User_UpdatedAt'        => now(),
             'User_DeletedAt'        => null, // Optional

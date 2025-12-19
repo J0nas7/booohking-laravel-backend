@@ -40,7 +40,6 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $hidden = [
         'User_Password',
-        'User_Remember_Token',
     ];
 
     /**
@@ -67,12 +66,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->User_Role === 'ROLE_ADMIN';
     }
 
-    // Tell Laravel to use the custom remember token column
-    public function getRememberToken()
-    {
-        return $this->User_Remember_Token;
-    }
-
     public function getEmailForPasswordReset()
     {
         return $this->User_Email;
@@ -91,16 +84,6 @@ class User extends Authenticatable implements JWTSubject
     public function routeNotificationForMail($notification = null)
     {
         return $this->User_Email;
-    }
-
-    public function setRememberToken($value)
-    {
-        $this->User_Remember_Token = $value;
-    }
-
-    public function getRememberTokenName()
-    {
-        return 'User_Remember_Token';
     }
 
     public function  getDeletedAtColumn()
