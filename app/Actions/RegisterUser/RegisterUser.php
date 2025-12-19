@@ -7,23 +7,13 @@ use App\Helpers\ServiceResponse;
 class RegisterUser
 {
     public function __construct(
-        protected ValidateRegistration $validator,
         protected CreateUser $creator,
         protected SendVerificationEmail $mailer
     ) {}
 
-    public function execute(array $data): ServiceResponse
+    public function execute(array $validated): ServiceResponse
     {
-        $validation = $this->validator->execute($data);
-
-        if ($validation !== true) {
-            return new ServiceResponse(
-                errors: $validation->toArray(),
-                status: 400
-            );
-        }
-
-        $user = $this->creator->execute($data);
+        $user = $this->creator->execute($validated);
 
         $emailResult = $this->mailer->execute($user);
 

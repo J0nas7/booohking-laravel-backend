@@ -45,12 +45,12 @@ class AuthControllerTest extends TestCase
         $data = [
             'User_Name' => 'John Doe',
             'User_Email' => 'john@example.com',
-            'User_Password' => 'password123'
+            'User_Password' => 'password123',
         ];
 
         $response = $this->postJson('/api/auth/register', $data);
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
             ->assertJsonStructure(['errors']);
     }
 

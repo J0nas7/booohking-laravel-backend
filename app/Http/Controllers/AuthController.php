@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\{
+    ActivateRequest,
+    LoginRequest,
+    RegisterUserRequest,
+    ResetPasswordRequest,
+    SendResetTokenRequest,
+};
 use App\Helpers\ApiResponse;
-use App\Http\Requests\ActivateRequest;
-use App\Http\Requests\SendResetTokenRequest;
 use App\Services\AuthService;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class AuthController extends Controller
@@ -19,34 +23,36 @@ class AuthController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'forgotPassword', 'resetPassword', 'register', 'activate', 'ok']]);
     }
 
+    // Register a new user.
     /**
-     * Register a new user.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param RegisterUserRequest $request
+     * @return JsonResponse
      */
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
-        $result = $this->authService->registerUser($request->all());
+        $result = $this->authService->registerUser($request->validated());
         return ApiResponse::fromServiceResult($result);
     }
 
+    // Activate the user's email account using the verification token.
+    /**
+     * @param ActivateRequest $request
+     * @return JsonResponse
+     */
     public function activate(ActivateRequest $request)
     {
         $result = $this->authService->activateAccount($request->validated());
         return ApiResponse::fromServiceResult($result);
     }
 
+    // Login a user and issue a JWT.
     /**
-     * Login a user and issue a JWT.
-     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->only(['User_Email', 'password']);
-        $result = $this->authService->authenticateUser($credentials);
+        $result = $this->authService->authenticateUser($request->validated());
 
         if (!$result->error) {
             $this->authService->forgetUserFromCache($result);
@@ -66,20 +72,20 @@ class AuthController extends Controller
         return ApiResponse::fromServiceResult($result);
     }
 
+    // Reset password using token.
     /**
-     * Reset password using token.
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        $result = $this->authService->resetPasswordWithToken($request->all());
+        $result = $this->authService->resetPasswordWithToken($request->validated());
         return ApiResponse::fromServiceResult($result);
     }
 
+    // Get a new token without re-entering credentials
     /**
-     * This is useful for mobile apps to get a new token without re-entering credentials
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function cloneToken()
     {
@@ -95,13 +101,11 @@ class AuthController extends Controller
         }
     }
 
+    // Refreshes the JSON Web Token (JWT) for the authenticated user.
     /**
-     * Refreshes the JSON Web Token (JWT) for the authenticated user.
-     *
-     * @param \Illuminate\Http\Request $request The incoming HTTP request instance.
-     * @return \Illuminate\Http\JsonResponse JSON response containing the new access token or an error message.
+     * @return JsonResponse
      */
-    public function refreshJWT(Request $request)
+    public function refreshJWT()
     {
         try {
             $result = $this->authService->refreshJWT();
@@ -115,10 +119,9 @@ class AuthController extends Controller
         }
     }
 
+    // Logout the authenticated user.
     /**
-     * Logout the authenticated user.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function logout()
     {
@@ -129,10 +132,9 @@ class AuthController extends Controller
         return ApiResponse::fromServiceResult($result);
     }
 
+    // Get details of the authenticated user.
     /**
-     * Get details of the authenticated user.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function me()
     {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit\Actions\RegisterUser;
+namespace Tests\Unit\Actions\SendResetToken;
 
-use App\Actions\RegisterUser\SendVerificationEmail;
-use App\Mail\WelcomeEmail;
+use App\Actions\SendResetToken\SendResetEmail;
+use App\Mail\ForgotPasswordMail;
 use App\Models\User;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,11 +12,12 @@ use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 
-class SendVerificationEmailTest extends RegisterUserTest
+class SendResetEmailTest extends SendResetTokenTest
 {
     use RefreshDatabase;
+
     protected Mailer&MockInterface $mailMock;
-    protected SendVerificationEmail $mailer;
+    protected SendResetEmail $mailer;
 
     protected function setUp(): void
     {
@@ -24,16 +25,14 @@ class SendVerificationEmailTest extends RegisterUserTest
 
         // Mock the Mailer
         $this->mailMock = Mockery::mock(Mailer::class);
-
-        $this->mailer = new SendVerificationEmail($this->mailMock);
+        $this->mailer = new SendResetEmail($this->mailMock);
     }
 
     #[Test]
     public function it_sends_email_successfully()
     {
-        $user = User::factory()->create([
-            'User_Email_Verification_Token' => '1234567890abcdef'
-        ]);
+        $user = User::factory()->create(['User_Email' => 'test@example.com']);
+        $token = '1234567890abcdef';
 
         // Expect Mailer to receive "to()->send()"
         $this->mailMock
@@ -45,9 +44,9 @@ class SendVerificationEmailTest extends RegisterUserTest
         $this->mailMock
             ->shouldReceive('send')
             ->once()
-            ->with(Mockery::type(WelcomeEmail::class));
+            ->with(Mockery::type(ForgotPasswordMail::class));
 
-        $result = $this->mailer->execute($user);
+        $result = $this->mailer->execute($user, $token);
 
         $this->assertEquals('Email sent successfully.', $result['status']);
         $this->assertEquals('', $result['token']);
@@ -56,9 +55,8 @@ class SendVerificationEmailTest extends RegisterUserTest
     #[Test]
     public function it_handles_mail_failure_gracefully()
     {
-        $user = User::factory()->create([
-            'User_Email_Verification_Token' => '1234567890abcdef'
-        ]);
+        $user = User::factory()->create(['User_Email' => 'test@example.com']);
+        $token = '1234567890abcdef';
 
         // Make the mailer throw
         $this->mailMock
@@ -68,9 +66,9 @@ class SendVerificationEmailTest extends RegisterUserTest
 
         Log::shouldReceive('error')->once();
 
-        $result = $this->mailer->execute($user);
+        $result = $this->mailer->execute($user, $token);
 
         $this->assertStringContainsString('Failed to send email', $result['status']);
-        $this->assertEquals($user->User_Email_Verification_Token, $result['token']);
+        $this->assertEquals($token, $result['token']);
     }
 }

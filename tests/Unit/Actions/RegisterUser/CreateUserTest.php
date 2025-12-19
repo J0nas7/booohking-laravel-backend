@@ -3,15 +3,13 @@
 namespace Tests\Unit\Actions\RegisterUser;
 
 use App\Actions\RegisterUser\CreateUser;
-use App\Models\User;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class CreateUserTest extends TestCase
+class CreateUserTest extends RegisterUserTest
 {
     use RefreshDatabase;
 
@@ -57,5 +55,25 @@ class CreateUserTest extends TestCase
             '/^\$2y\$\d{2}\$[\.\/A-Za-z0-9]{53}$/',
             $user->User_Password
         );
+    }
+
+    #[Test]
+    public function it_fails_to_create_user_with_invalid_data()
+    {
+        $password = 'short';
+        $this->hasher
+            ->shouldReceive('make')
+            ->once()
+            ->with($password)
+            ->andReturn('hashed-password');
+
+        $data = [
+            'User_Name' => 'John Doe',
+            'User_Email' => 'invalid-email',
+            'User_Password' => $password,
+            // Invalid User_Email and Too Short User_Password
+        ];
+
+        $this->creator->execute($data);
     }
 }

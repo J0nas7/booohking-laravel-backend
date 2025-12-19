@@ -46,7 +46,7 @@ class AuthTest extends TestCase
 
         $response = $this->postJson('/api/auth/register', $data);
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
             ->assertJsonStructure(['errors']);
     }
 
@@ -78,7 +78,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(401)
-            ->assertJson(['error' => 'Invalid email or password']);
+            ->assertJson(['error' => 'The selected user  email is invalid.']);
     }
 
     /**
@@ -146,7 +146,7 @@ class AuthTest extends TestCase
 
         $response = $this->postJson('/api/auth/register', $data);
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
             ->assertJsonStructure(['errors']);
     }
 
