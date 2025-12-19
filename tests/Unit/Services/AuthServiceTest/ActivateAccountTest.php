@@ -23,7 +23,7 @@ class ActivateAccountTest extends AuthServiceTest
         // ---- Arrange ----
         $user = User::factory()->unverified()->create([
             'User_Email' => 'test@example.com',
-            'User_Email_Verification_Token' => 'valid-token',
+            'email_verification_token' => 'valid-token',
         ]);
 
         $validated = [
@@ -35,7 +35,7 @@ class ActivateAccountTest extends AuthServiceTest
 
         // ---- Assert ----
         $user->refresh(); // Refresh the user to get updated fields
-        $this->assertNull($user->User_Email_Verification_Token, 'Token should be cleared after activation');
+        $this->assertNull($user->email_verification_token, 'Token should be cleared after activation');
         $this->assertNotNull($user->email_verified_at, 'Email should be verified after activation');
         $this->assertEquals('Email verified successfully', $result->message);
         $this->assertEquals('', $result->error); // No error
@@ -47,7 +47,7 @@ class ActivateAccountTest extends AuthServiceTest
         // ---- Arrange ----
         $user = User::factory()->unverified()->create([
             'User_Email' => 'test@example.com',
-            'User_Email_Verification_Token' => 'valid-token',
+            'email_verification_token' => 'valid-token',
         ]);
 
         $validated = [
@@ -63,7 +63,7 @@ class ActivateAccountTest extends AuthServiceTest
         $user->refresh();
 
         // The token should not be cleared and email should not be verified
-        $this->assertEquals('valid-token', $user->User_Email_Verification_Token);
+        $this->assertEquals('valid-token', $user->email_verification_token);
         $this->assertNull($user->email_verified_at);
     }
 
@@ -73,7 +73,7 @@ class ActivateAccountTest extends AuthServiceTest
         // ---- Arrange ----
         $user = User::factory()->create([
             'User_Email' => 'test@example.com',
-            'User_Email_Verification_Token' => 'valid-token',
+            'email_verification_token' => 'valid-token',
             'email_verified_at' => now(), // Already verified
         ]);
 
@@ -115,7 +115,7 @@ class ActivateAccountTest extends AuthServiceTest
 
         // Since the user doesn't exist, no database changes should have been made, so no user with this token should exist
         $this->assertDatabaseMissing('users', [
-            'User_Email_Verification_Token' => $invalidToken,
+            'email_verification_token' => $invalidToken,
         ]);
     }
 }

@@ -32,7 +32,7 @@ class SendVerificationEmailTest extends RegisterUserTest
     public function it_sends_email_successfully()
     {
         $user = User::factory()->create([
-            'User_Email_Verification_Token' => '1234567890abcdef'
+            'email_verification_token' => '1234567890abcdef'
         ]);
 
         // Expect Mailer to receive "to()->send()"
@@ -57,7 +57,7 @@ class SendVerificationEmailTest extends RegisterUserTest
     public function it_handles_mail_failure_gracefully()
     {
         $user = User::factory()->create([
-            'User_Email_Verification_Token' => '1234567890abcdef'
+            'email_verification_token' => '1234567890abcdef'
         ]);
 
         // Make the mailer throw
@@ -71,6 +71,6 @@ class SendVerificationEmailTest extends RegisterUserTest
         $result = $this->mailer->execute($user);
 
         $this->assertStringContainsString('Failed to send email', $result['status']);
-        $this->assertEquals($user->User_Email_Verification_Token, $result['token']);
+        $this->assertEquals($user->email_verification_token, $result['token']);
     }
 }

@@ -47,7 +47,7 @@ class CreateUserTest extends RegisterUserTest
             'User_Role' => 'ROLE_USER'
         ]);
 
-        $this->assertNotNull($user->User_Email_Verification_Token);
+        $this->assertNotNull($user->email_verification_token);
         $this->assertNull($user->email_verified_at);
 
         // Assert it looks like a bcrypt hash

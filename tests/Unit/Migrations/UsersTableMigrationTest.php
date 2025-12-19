@@ -29,7 +29,7 @@ class UsersTableMigrationTest extends TestCase
             'User_Name',
             'User_Email',
             'User_Password',
-            'User_Email_Verification_Token',
+            'email_verification_token',
             'email_verified_at',
             'User_Role',
             'User_CreatedAt',
@@ -56,7 +56,7 @@ class UsersTableMigrationTest extends TestCase
         $userPassword = $columns->where('name', 'User_Password')->first();
         $this->assertEquals('varchar', strtolower($userPassword->type));
 
-        $emailVerificationToken = $columns->where('name', 'User_Email_Verification_Token')->first();
+        $emailVerificationToken = $columns->where('name', 'email_verification_token')->first();
         $this->assertEquals('varchar', strtolower($emailVerificationToken->type));
 
         $emailVerifiedAt = $columns->where('name', 'email_verified_at')->first();

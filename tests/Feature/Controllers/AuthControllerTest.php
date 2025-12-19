@@ -247,7 +247,7 @@ class AuthControllerTest extends TestCase
     {
         $user = User::factory()->unverified()->create([
             'User_Email' => 'test@example.com',
-            'User_Email_Verification_Token' => 'valid-token',
+            'email_verification_token' => 'valid-token',
         ]);
 
         $response = $this->postJson('/api/auth/activate-account', [

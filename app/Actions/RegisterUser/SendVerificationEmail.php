@@ -13,7 +13,7 @@ class SendVerificationEmail
 
     public function execute(User $user): array
     {
-        $token = $user->User_Email_Verification_Token;
+        $token = $user->email_verification_token;
 
         try {
             $this->mail->to($user->User_Email)

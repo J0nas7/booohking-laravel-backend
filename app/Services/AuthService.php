@@ -50,7 +50,7 @@ class AuthService
     public function activateAccount(array $validated): ServiceResponse
     {
         // Find the user by verification token
-        $user = User::where('User_Email_Verification_Token', $validated['token'])->first();
+        $user = User::where('email_verification_token', $validated['token'])->first();
 
         if (!$user) {
             return new ServiceResponse(
@@ -60,7 +60,7 @@ class AuthService
 
         // Update user email verification details
         $user->email_verified_at = now();
-        $user->User_Email_Verification_Token = null;
+        $user->email_verification_token = null;
         $user->save();
 
         // Return a success message

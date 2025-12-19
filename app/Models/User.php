@@ -50,7 +50,7 @@ class User extends Authenticatable implements JWTSubject
     protected function casts(): array
     {
         return [
-            'User_Email_Verification_Token' => 'string',
+            'email_verification_token' => 'string',
             'email_verified_at' => 'datetime',
             'User_Password' => 'hashed',
         ];

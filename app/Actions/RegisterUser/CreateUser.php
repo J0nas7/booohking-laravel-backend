@@ -29,7 +29,7 @@ class CreateUser
 
         $user = User::create($userData);
 
-        $user->User_Email_Verification_Token = Str::random(16);
+        $user->email_verification_token = Str::random(16);
         $user->email_verified_at = null;
         $user->save();
 
