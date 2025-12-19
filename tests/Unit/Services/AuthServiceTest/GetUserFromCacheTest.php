@@ -30,7 +30,7 @@ class GetUserFromCacheTest extends AuthServiceTest
 
         // Mock a ServiceResponse with user data
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]], // Simulate user data in ServiceResponse
+            data: ['user' => (object) ['id' => $userId]], // Simulate user data in ServiceResponse
             message: ''
         );
 
@@ -48,7 +48,7 @@ class GetUserFromCacheTest extends AuthServiceTest
         $userId = 1;
         $cacheKey = 'user:me:' . $userId;
         $cachedData = [
-            'data' => ['user' => (object) ['User_ID' => $userId, 'name' => 'Test User']],
+            'data' => ['user' => (object) ['id' => $userId, 'name' => 'Test User']],
             'message' => 'User data retrieved from cache',
         ];
 
@@ -59,7 +59,7 @@ class GetUserFromCacheTest extends AuthServiceTest
 
         // Mock a ServiceResponse with user data
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]], // Simulate user data in ServiceResponse
+            data: ['user' => (object) ['id' => $userId]], // Simulate user data in ServiceResponse
             message: ''
         );
 
@@ -103,7 +103,7 @@ class GetUserFromCacheTest extends AuthServiceTest
 
         // Mock a ServiceResponse with valid user data
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: ''
         );
 

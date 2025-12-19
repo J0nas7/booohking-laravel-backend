@@ -38,12 +38,12 @@ class ServiceControllerTest extends TestCase
     public function user_can_read_services_by_user_id()
     {
         // Create some services associated with the user
-        $serviceA = Service::factory()->create(['User_ID' => $this->user->User_ID]);
-        $serviceB = Service::factory()->create(['User_ID' => $this->user->User_ID]);
+        $serviceA = Service::factory()->create(['User_ID' => $this->user->id]);
+        $serviceB = Service::factory()->create(['User_ID' => $this->user->id]);
 
         // Send GET request to fetch the services
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->getJson("/api/services/users/{$this->user->User_ID}");
+            ->getJson("/api/services/users/{$this->user->id}");
 
         // Assert that the status is OK and services are returned
         $response->assertStatus(200)
@@ -64,7 +64,7 @@ class ServiceControllerTest extends TestCase
     {
         // Send GET request to fetch services for a user with no services
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->getJson("/api/services/users/{$this->user->User_ID}");
+            ->getJson("/api/services/users/{$this->user->id}");
 
         // Assert that the status is 404 and appropriate message is returned
         $response->assertStatus(404)
@@ -96,11 +96,11 @@ class ServiceControllerTest extends TestCase
     public function it_returns_error_for_invalid_pagination()
     {
         // Create a service associated with the user
-        $service = Service::factory()->create(['User_ID' => $this->user->User_ID]);
+        $service = Service::factory()->create(['User_ID' => $this->user->id]);
 
         // Send GET request with invalid pagination parameters
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->getJson("/api/services/users/{$this->user->User_ID}?page=-1&perPage=-5");
+            ->getJson("/api/services/users/{$this->user->id}?page=-1&perPage=-5");
 
         // Assert that the status is OK and services are returned (default page = 1, perPage = 10)
         $response->assertStatus(200)
@@ -118,12 +118,12 @@ class ServiceControllerTest extends TestCase
     public function it_returns_services_with_default_pagination_when_missing_params()
     {
         // Create services associated with the user
-        $serviceA = Service::factory()->create(['User_ID' => $this->user->User_ID]);
-        $serviceB = Service::factory()->create(['User_ID' => $this->user->User_ID]);
+        $serviceA = Service::factory()->create(['User_ID' => $this->user->id]);
+        $serviceB = Service::factory()->create(['User_ID' => $this->user->id]);
 
         // Send GET request with no pagination parameters
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->getJson("/api/services/users/{$this->user->User_ID}");
+            ->getJson("/api/services/users/{$this->user->id}");
 
         // Assert that the status is OK and services are returned with default pagination
         $response->assertStatus(200)
@@ -318,7 +318,7 @@ class ServiceControllerTest extends TestCase
 
         $payload = [
             'Service_Name' => 'Updated Name',
-            'User_ID' => $user->User_ID,
+            'User_ID' => $user->id,
             'Service_DurationMinutes' => 60,
             'Service_Description' => 'Updated description',
         ];

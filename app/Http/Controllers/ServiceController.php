@@ -19,7 +19,7 @@ class ServiceController extends BaseController
     {
         return [
             'Service_Name' => 'required|string|max:255',
-            'User_ID' => 'required|exists:users,User_ID',
+            'User_ID' => 'required|exists:users,id',
             'Service_DurationMinutes' => 'required|integer|min:1',
             'Service_Description' => 'nullable|string',
         ];
@@ -40,7 +40,7 @@ class ServiceController extends BaseController
         $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = Service::with($this->with)
-            ->where('User_ID', $user->User_ID)
+            ->where('user_id', $user->id)
             ->orderBy('Service_Name');
 
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);

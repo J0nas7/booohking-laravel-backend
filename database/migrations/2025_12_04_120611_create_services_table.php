@@ -21,7 +21,7 @@ return new class extends Migration
             MigrationHelper::addDateTimeFields($table, $prefix);
 
             $table->foreign('User_ID')
-                ->references('User_ID')
+                ->references('id')
                 ->on('users')
                 ->onDelete('cascade');
         });

@@ -42,7 +42,7 @@ class BookingsSeeder extends Seeder
             // 3 bookings per provider, sequential (no overlaps)
             for ($i = 0; $i < 3; $i++) {
                 Booking::factory()->create([
-                    'User_ID' => $users->random()->User_ID,
+                    'User_ID' => $users->random()->id,
                     'Service_ID' => $service->Service_ID,
                     'Provider_ID' => $provider->Provider_ID,
                     'Booking_StartAt' => $startAt,

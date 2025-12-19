@@ -64,7 +64,7 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
         $result = $this->authService->resetPasswordWithToken($data);
 
         // Refresh user from DB
-        $userFresh = User::find($user->User_ID);
+        $userFresh = User::find($user->id);
 
         // Assert
         $this->assertEquals('', $result->error);

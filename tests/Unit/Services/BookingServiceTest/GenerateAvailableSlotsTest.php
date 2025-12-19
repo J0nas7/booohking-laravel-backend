@@ -83,7 +83,7 @@ class GenerateAvailableSlotsTest extends TestCase
         $bookedStart = $tomorrow->copy()->setTime(10, 30, 0);
         Booking::factory()->create([
             'Provider_ID' => $provider->Provider_ID,
-            'User_ID' => $user->User_ID,
+            'User_ID' => $user->id,
             'Service_ID' => $service->Service_ID,
             'Booking_StartAt' => $bookedStart,
         ]);

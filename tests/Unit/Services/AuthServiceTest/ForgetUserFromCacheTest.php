@@ -23,7 +23,7 @@ class ForgetUserFromCacheTest extends AuthServiceTest
         // Arrange: Create a ServiceResponse with valid user data
         $userId = 1;
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: 'User data fetched successfully.'
         );
 
@@ -75,7 +75,7 @@ class ForgetUserFromCacheTest extends AuthServiceTest
         // Arrange: Create a ServiceResponse with valid user data
         $userId = 2;
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: 'User data fetched successfully.'
         );
 
@@ -100,9 +100,9 @@ class ForgetUserFromCacheTest extends AuthServiceTest
 
     public function testForgetUserFromCacheWithMalformedData()
     {
-        // Arrange: Create a ServiceResponse with invalid user data (no User_ID)
+        // Arrange: Create a ServiceResponse with invalid user data (no id)
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => null]],  // Invalid User_ID
+            data: ['user' => (object) ['id' => null]],  // Invalid id
             message: 'Invalid user data.'
         );
 
@@ -127,7 +127,7 @@ class ForgetUserFromCacheTest extends AuthServiceTest
         // Arrange: Create a ServiceResponse with valid user data but an empty message
         $userId = 3;
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: ''  // Empty message
         );
 

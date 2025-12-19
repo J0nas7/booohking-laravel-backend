@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('jwt', function (Request $request) {
             return Limit::perMinute(10)->by(
-                optional($request->user())->User_ID ?: $request->ip()
+                optional($request->user())->id ?: $request->ip()
             );
         });
     }

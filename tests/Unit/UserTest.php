@@ -36,10 +36,10 @@ class UserTest extends TestCase
 
         $response = $this->withHeaders([
             'Authorization' => "Bearer $token"
-        ])->getJson('/api/users/' . $user->User_ID);
+        ])->getJson('/api/users/' . $user->id);
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['User_ID' => $user->User_ID]);
+            ->assertJsonFragment(['id' => $user->id]);
     }
 
     /**
@@ -103,7 +103,7 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         $user->email = 'updated@example.com';
 
-        $response = $this->putJson('/api/users/' . $user->User_ID, $user->toArray());
+        $response = $this->putJson('/api/users/' . $user->id, $user->toArray());
 
         $response->assertStatus(200)
             ->assertJsonFragment(['email' => 'updated@example.com']);
@@ -130,7 +130,7 @@ class UserTest extends TestCase
     public function test_delete_user_success()
     {
         $user = User::factory()->create();
-        $response = $this->deleteJson('/api/users/' . $user->User_ID);
+        $response = $this->deleteJson('/api/users/' . $user->id);
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
@@ -175,7 +175,7 @@ class UserTest extends TestCase
             'email' => 'not-an-email',
         ];
 
-        $response = $this->putJson('/api/users/' . $user->User_ID, $updateData);
+        $response = $this->putJson('/api/users/' . $user->id, $updateData);
 
         $response->assertStatus(422)
             ->assertJsonStructure(['errors']);
@@ -189,7 +189,7 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         $user->delete();
 
-        $response = $this->deleteJson('/api/users/' . $user->User_ID);
+        $response = $this->deleteJson('/api/users/' . $user->id);
 
         $response->assertStatus(404)
             ->assertJson(['message' => 'No query results for model [App\\Models\\User] 1']);

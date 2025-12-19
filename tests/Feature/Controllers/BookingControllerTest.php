@@ -55,15 +55,15 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_can_only_see_their_own_bookings()
     {
-        Booking::factory()->create(['User_ID' => $this->user->User_ID, 'Provider_ID' => $this->provider->Provider_ID]);
-        Booking::factory()->create(['User_ID' => $this->admin->User_ID, 'Provider_ID' => $this->provider->Provider_ID]);
+        Booking::factory()->create(['User_ID' => $this->user->id, 'Provider_ID' => $this->provider->Provider_ID]);
+        Booking::factory()->create(['User_ID' => $this->admin->id, 'Provider_ID' => $this->provider->Provider_ID]);
 
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->getJson('/api/bookings');
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data'));
-        $this->assertEquals($this->user->User_ID, $response->json('data')[0]['User_ID']);
+        $this->assertEquals($this->user->id, $response->json('data')[0]['User_ID']);
     }
 
     // ==== store() ====
@@ -74,7 +74,7 @@ class BookingControllerTest extends TestCase
         $end = $start->copy()->addMinutes($this->service->Service_DurationMinutes);
 
         $payload = [
-            'User_ID' => $this->user->User_ID,
+            'User_ID' => $this->user->id,
             'Provider_ID' => $this->provider->Provider_ID,
             'Service_ID' => $this->service->Service_ID,
             'Booking_StartAt' => $start->toDateTimeString(),
@@ -86,7 +86,7 @@ class BookingControllerTest extends TestCase
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('bookings', [
-            'User_ID' => $this->user->User_ID,
+            'User_ID' => $this->user->id,
             'Provider_ID' => $this->provider->Provider_ID,
         ]);
     }
@@ -104,7 +104,7 @@ class BookingControllerTest extends TestCase
         ]);
 
         $payload = [
-            'User_ID' => $this->user->User_ID,
+            'User_ID' => $this->user->id,
             'Provider_ID' => $this->provider->Provider_ID,
             'Service_ID' => $this->service->Service_ID,
             'Booking_StartAt' => $start->toDateTimeString(),
@@ -122,7 +122,7 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_can_view_own_booking()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->user->id]);
 
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->getJson("/api/bookings/{$booking->Booking_ID}");
@@ -134,7 +134,7 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_cannot_view_others_booking()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->admin->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->admin->id]);
 
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->getJson("/api/bookings/{$booking->Booking_ID}");
@@ -160,7 +160,7 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_can_delete_their_own_booking()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->user->id]);
 
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->deleteJson("/api/bookings/{$booking->Booking_ID}");
@@ -172,7 +172,7 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_cannot_delete_others_booking()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->admin->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->admin->id]);
 
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->deleteJson("/api/bookings/{$booking->Booking_ID}");
@@ -251,10 +251,10 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function it_reads_bookings_by_user_id()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->user->id]);
 
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->getJson("/api/bookings/users/{$this->user->User_ID}");
+            ->getJson("/api/bookings/users/{$this->user->id}");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -278,10 +278,10 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function admin_can_read_any_users_bookings()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->user->id]);
 
         $response = $this->withHeaders($this->authHeaders($this->admin))
-            ->getJson("/api/bookings/users/{$this->user->User_ID}");
+            ->getJson("/api/bookings/users/{$this->user->id}");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -294,12 +294,12 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_can_update_their_own_booking()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->user->id]);
         $newStart = Carbon::tomorrow()->setHour(14);
         $newEnd = $newStart->copy()->addMinutes($this->service->Service_DurationMinutes);
 
         $payload = [
-            'User_ID' => $this->user->User_ID,
+            'User_ID' => $this->user->id,
             'Provider_ID' => $this->provider->Provider_ID,
             'Service_ID' => $this->service->Service_ID,
             'Booking_StartAt' => $newStart->toDateTimeString(),
@@ -312,7 +312,7 @@ class BookingControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'Booking_ID' => $booking->Booking_ID,
-                'User_ID' => $this->user->User_ID
+                'User_ID' => $this->user->id
             ]);
 
         $this->assertDatabaseHas('bookings', [
@@ -325,12 +325,12 @@ class BookingControllerTest extends TestCase
     #[Test]
     public function user_cannot_update_others_booking()
     {
-        $booking = Booking::factory()->create(['User_ID' => $this->admin->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->admin->id]);
         $newStart = Carbon::tomorrow()->setHour(14);
         $newEnd = $newStart->copy()->addMinutes($this->service->Service_DurationMinutes);
 
         $payload = [
-            'User_ID' => $this->user->User_ID,
+            'User_ID' => $this->user->id,
             'Provider_ID' => $this->provider->Provider_ID,
             'Service_ID' => $this->service->Service_ID,
             'Booking_StartAt' => $newStart->toDateTimeString(),
@@ -352,10 +352,10 @@ class BookingControllerTest extends TestCase
             'Booking_EndAt' => Carbon::tomorrow()->setHour(11),
         ]);
 
-        $booking = Booking::factory()->create(['User_ID' => $this->user->User_ID]);
+        $booking = Booking::factory()->create(['User_ID' => $this->user->id]);
 
         $payload = [
-            'User_ID' => $this->user->User_ID,
+            'User_ID' => $this->user->id,
             'Provider_ID' => $this->provider->Provider_ID,
             'Service_ID' => $this->service->Service_ID,
             'Booking_StartAt' => Carbon::tomorrow()->setHour(10)->toDateTimeString(),

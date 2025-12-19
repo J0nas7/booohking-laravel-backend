@@ -50,7 +50,7 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                '*' => ['User_ID', 'name', 'email']
+                '*' => ['id', 'name', 'email']
             ]);
     }
 
@@ -109,10 +109,10 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->withHeaders($this->authHeaders($this->admin))
-            ->getJson("/api/users/{$user->User_ID}");
+            ->getJson("/api/users/{$user->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['User_ID' => $user->User_ID]);
+            ->assertJsonFragment(['id' => $user->id]);
     }
 
     #[Test]
@@ -121,7 +121,7 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->getJson("/api/users/{$user->User_ID}");
+            ->getJson("/api/users/{$user->id}");
 
         $response->assertStatus(403);
     }
@@ -141,13 +141,13 @@ class UserControllerTest extends TestCase
         ];
 
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->putJson("/api/users/{$user->User_ID}", $payload);
+            ->putJson("/api/users/{$user->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJsonFragment(['email' => 'updated@example.com']);
 
         $this->assertDatabaseHas('users', [
-            'User_ID' => $user->User_ID,
+            'id' => $user->id,
             'email' => 'updated@example.com',
         ]);
     }
@@ -159,13 +159,13 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->withHeaders($this->authHeaders($this->user))
-            ->deleteJson("/api/users/{$user->User_ID}");
+            ->deleteJson("/api/users/{$user->id}");
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
         $this->assertSoftDeleted('users', [
-            'User_ID' => $user->User_ID,
+            'id' => $user->id,
         ]);
     }
 }

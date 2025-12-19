@@ -16,7 +16,7 @@ class User extends Authenticatable implements JWTSubject
 {
     protected $table = "users";
 
-    protected $primaryKey = "User_ID";
+    protected $primaryKey = "id";
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes, CanResetPassword;

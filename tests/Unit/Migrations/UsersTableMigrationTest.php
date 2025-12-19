@@ -25,7 +25,7 @@ class UsersTableMigrationTest extends TestCase
 
         // Assert expected columns exist
         $expectedColumns = [
-            'User_ID',
+            'id',
             'name',
             'email',
             'password',
@@ -44,7 +44,7 @@ class UsersTableMigrationTest extends TestCase
         // SQLite: check column types
         $columns = collect(DB::select("PRAGMA table_info({$this->table})"));
 
-        $userId = $columns->where('name', 'User_ID')->first();
+        $userId = $columns->where('name', 'id')->first();
         $this->assertEquals('integer', strtolower($userId->type));
 
         $userName = $columns->where('name', 'name')->first();

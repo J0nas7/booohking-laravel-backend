@@ -78,7 +78,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(401)
-            ->assertJson(['error' => 'The selected user  email is invalid.']);
+            ->assertJson(['error' => 'The selected email is invalid.']);
     }
 
     /**

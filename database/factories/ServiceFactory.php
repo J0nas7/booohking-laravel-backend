@@ -31,7 +31,7 @@ class ServiceFactory extends Factory
     public function forUser(User $user): static
     {
         return $this->state(fn() => [
-            'User_ID' => $user->User_ID,
+            'User_ID' => $user->id,
         ]);
     }
 }

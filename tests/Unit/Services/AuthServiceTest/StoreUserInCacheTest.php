@@ -23,7 +23,7 @@ class StoreUserInCacheTest extends AuthServiceTest
         // Arrange: Create a valid ServiceResponse with user data.
         $userId = 1;
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: 'User data fetched successfully.'
         );
 
@@ -78,7 +78,7 @@ class StoreUserInCacheTest extends AuthServiceTest
         // Arrange: Create a valid ServiceResponse with user data
         $userId = 2;
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: 'User data fetched successfully.'
         );
 
@@ -112,7 +112,7 @@ class StoreUserInCacheTest extends AuthServiceTest
         // Arrange: Create a valid ServiceResponse with user data
         $userId = 3;
         $serviceResponse = new ServiceResponse(
-            data: ['user' => (object) ['User_ID' => $userId]],
+            data: ['user' => (object) ['id' => $userId]],
             message: 'User data fetched successfully.'
         );
 

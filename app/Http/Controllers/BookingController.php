@@ -19,7 +19,7 @@ class BookingController extends BaseController
     protected function rules(): array
     {
         return [
-            'User_ID' => 'required|exists:users,User_ID',
+            'User_ID' => 'required|exists:users,id',
             'Provider_ID' => 'required|exists:providers,Provider_ID',
             'Service_ID' => 'required|exists:services,Service_ID',
             'Booking_StartAt' => 'required|date|after:now',
@@ -94,7 +94,7 @@ class BookingController extends BaseController
 
         // Build query: all bookings for this user
         $query = Booking::with($this->with)
-            ->where('User_ID', $user->User_ID)
+            ->where('User_ID', $user->id)
             ->orderBy('Booking_StartAt', 'desc');
 
         // Paginate results
@@ -146,7 +146,7 @@ class BookingController extends BaseController
 
         // Non-admins see only their own bookings
         if ($user->role !== 'ROLE_ADMIN') {
-            $query->where('User_ID', $user->User_ID);
+            $query->where('User_ID', $user->id);
         }
 
         // Paginate the results
@@ -196,7 +196,7 @@ class BookingController extends BaseController
         $user = $request->user();
 
         // Only admins or owner can view
-        if ($user->role !== 'ROLE_ADMIN' && $item->User_ID !== $user->User_ID) {
+        if ($user->role !== 'ROLE_ADMIN' && $item->User_ID !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -209,7 +209,7 @@ class BookingController extends BaseController
         $item = ($this->modelClass)::findOrFail($id);
         $user = $request->user();
 
-        if ($user->role !== 'ROLE_ADMIN' && $item->User_ID !== $user->User_ID) {
+        if ($user->role !== 'ROLE_ADMIN' && $item->User_ID !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -251,7 +251,7 @@ class BookingController extends BaseController
         $user = $request->user();
 
         // Only admin or owner can cancel
-        if ($user->role !== 'ROLE_ADMIN' && $booking->User_ID !== $user->User_ID) {
+        if ($user->role !== 'ROLE_ADMIN' && $booking->User_ID !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

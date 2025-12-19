@@ -246,7 +246,7 @@ class AuthService
             return null; // Return null if user data is missing
         }
 
-        $userId = $result->data['user']->User_ID;
+        $userId = $result->data['user']->id;
         $cacheKey = 'user:me:' . $userId;
         $cachedData = Cache::get($cacheKey);
 
@@ -273,7 +273,7 @@ class AuthService
             return; // Return early if user data is missing
         }
 
-        $userId = $result->data['user']->User_ID;
+        $userId = $result->data['user']->id;
         $cacheKey = 'user:me:' . $userId;
         $cacheData = [
             'data' => $result->data,
@@ -293,7 +293,7 @@ class AuthService
             return; // Return early if user data is missing
         }
 
-        $userId = $result->data['user']->User_ID;
+        $userId = $result->data['user']->id;
         $cacheKey = 'user:me:' . $userId;
         Cache::forget($cacheKey);
     }
