@@ -73,7 +73,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonFragment(['User_Email' => 'newuser@example.com']);
 
-        $this->assertDatabaseHas('Boo_Users', [
+        $this->assertDatabaseHas('users', [
             'User_Email' => 'newuser@example.com',
         ]);
 
@@ -146,7 +146,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonFragment(['User_Email' => 'updated@example.com']);
 
-        $this->assertDatabaseHas('Boo_Users', [
+        $this->assertDatabaseHas('users', [
             'User_ID' => $user->User_ID,
             'User_Email' => 'updated@example.com',
         ]);
@@ -164,7 +164,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
-        $this->assertSoftDeleted('Boo_Users', [
+        $this->assertSoftDeleted('users', [
             'User_ID' => $user->User_ID,
         ]);
     }

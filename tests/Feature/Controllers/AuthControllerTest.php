@@ -35,7 +35,7 @@ class AuthControllerTest extends TestCase
                 'message' => 'User registered successfully'
             ]);
 
-        $this->assertDatabaseHas('Boo_Users', [
+        $this->assertDatabaseHas('users', [
             'User_Email' => 'john@example.com'
         ]);
     }

@@ -146,7 +146,7 @@ class ProviderWorkingHourControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonFragment(['PWH_DayOfWeek' => 1]);
 
-        $this->assertDatabaseHas('Boo_ProviderWorkingHours', [
+        $this->assertDatabaseHas('provider_working_hours', [
             'Provider_ID' => $provider->Provider_ID,
             'PWH_DayOfWeek' => 1,
         ]);
@@ -222,7 +222,7 @@ class ProviderWorkingHourControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonFragment(['PWH_DayOfWeek' => 2]);
 
-        $this->assertDatabaseHas('Boo_ProviderWorkingHours', [
+        $this->assertDatabaseHas('provider_working_hours', [
             'PWH_ID'      => $pwh->PWH_ID,
             'PWH_DayOfWeek' => 2,
         ]);
@@ -276,7 +276,7 @@ class ProviderWorkingHourControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
-        $this->assertSoftDeleted('Boo_ProviderWorkingHours', [
+        $this->assertSoftDeleted('provider_working_hours', [
             'PWH_ID' => $pwh->PWH_ID,
         ]);
     }

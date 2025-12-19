@@ -17,8 +17,6 @@ class ProvidersSeederTest extends TestCase
     #[Test]
     public function it_seeds_providers_table_correctly()
     {
-        $databasePrefix = "Boo_";
-
         // Run the seeder
         User::factory()->create();
         Service::factory()->create();
@@ -32,7 +30,7 @@ class ProvidersSeederTest extends TestCase
         );
 
         // Assert specific records exist
-        $this->assertDatabaseHas($databasePrefix . 'Providers', [
+        $this->assertDatabaseHas('providers', [
             'Provider_Timezone' => 'UTC',
             'Service_ID' => '1',
         ]);

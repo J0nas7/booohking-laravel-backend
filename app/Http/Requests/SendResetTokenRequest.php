@@ -25,7 +25,7 @@ class SendResetTokenRequest extends FormRequest
     public function rules()
     {
         return [
-            'User_Email' => 'required|email|exists:Boo_Users,User_Email',
+            'User_Email' => 'required|email|exists:users,User_Email',
         ];
     }
 

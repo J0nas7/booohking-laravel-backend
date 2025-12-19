@@ -12,7 +12,7 @@ class UsersTableMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected string $table = 'Boo_Users';
+    protected string $table = 'users';
 
     #[Test]
     public function it_creates_users_table_with_correct_schema()

@@ -12,7 +12,7 @@ class ProviderWorkingHoursTableMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected string $table = 'Boo_ProviderWorkingHours';
+    protected string $table = 'provider_working_hours';
 
     #[Test]
     public function it_creates_provider_working_hours_table_with_correct_schema()

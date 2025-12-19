@@ -12,7 +12,7 @@ class ProvidersTableMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected string $table = 'Boo_Providers';
+    protected string $table = 'providers';
 
     #[Test]
     public function it_creates_providers_table_with_correct_schema()

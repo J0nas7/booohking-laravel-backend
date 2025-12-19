@@ -23,7 +23,7 @@ class RegisterUserRequest extends FormRequest
     {
         return [
             'acceptTerms'   => 'required|accepted',
-            'User_Email'    => 'required|email|unique:Boo_Users,User_Email',
+            'User_Email'    => 'required|email|unique:users,User_Email',
             'User_Password' => 'required|min:6|confirmed',
             'User_Name'     => 'required|string|max:255',
             'User_Role'     => 'nullable|in:ROLE_ADMIN,ROLE_USER',

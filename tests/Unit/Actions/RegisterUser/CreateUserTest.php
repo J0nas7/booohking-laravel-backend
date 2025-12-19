@@ -42,7 +42,7 @@ class CreateUserTest extends RegisterUserTest
 
         $user = $this->creator->execute($data);
 
-        $this->assertDatabaseHas('Boo_Users', [
+        $this->assertDatabaseHas('users', [
             'User_Email' => 'test@example.com',
             'User_Role' => 'ROLE_USER'
         ]);

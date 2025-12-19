@@ -8,6 +8,8 @@ class ProviderWorkingHour extends BaseModel
 {
     use SoftDeletes;
 
+    protected $table = "provider_working_hours";
+
     const MODEL_NAME = "PWH"; // Short prefix for ProviderWorkingHour
     const DELETED_AT = self::MODEL_NAME . '_DeletedAt';
 

@@ -85,7 +85,7 @@ class BookingControllerTest extends TestCase
             ->postJson('/api/bookings', $payload);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('Boo_Bookings', [
+        $this->assertDatabaseHas('bookings', [
             'User_ID' => $this->user->User_ID,
             'Provider_ID' => $this->provider->Provider_ID,
         ]);
@@ -154,7 +154,7 @@ class BookingControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
-        $this->assertSoftDeleted('Boo_Bookings', ['Booking_ID' => $booking->Booking_ID]);
+        $this->assertSoftDeleted('bookings', ['Booking_ID' => $booking->Booking_ID]);
     }
 
     #[Test]
@@ -315,7 +315,7 @@ class BookingControllerTest extends TestCase
                 'User_ID' => $this->user->User_ID
             ]);
 
-        $this->assertDatabaseHas('Boo_Bookings', [
+        $this->assertDatabaseHas('bookings', [
             'Booking_ID' => $booking->Booking_ID,
             'Booking_StartAt' => $newStart,
             'Booking_EndAt' => $newEnd,

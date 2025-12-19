@@ -15,7 +15,7 @@ abstract class BaseModel extends Model
     abstract protected function getFillableFields(): array;
     abstract protected function getCastsFields(): array;
 
-    // Table name is constructed as 'Boo_' + plural model name
+    // Table name is constructed as plural model name
     protected $table;
 
     // Primary key is constructed as model prefix + 'ID'
@@ -30,7 +30,7 @@ abstract class BaseModel extends Model
     {
         parent::__construct($attributes);
 
-        $this->table = 'Boo_' . Str::plural(class_basename(static::class));
+        // $this->table = Str::plural(class_basename(static::class));
         $this->primaryKey = static::getModelPrefix() . '_ID';
         $this->fieldPrefix = static::getModelPrefix() . '_';
 

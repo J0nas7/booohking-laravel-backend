@@ -9,8 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $databasePrefix = "Boo_";
-        Schema::create($databasePrefix . 'Bookings', function (Blueprint $table) use ($databasePrefix) {
+        Schema::create('bookings', function (Blueprint $table) {
             $prefix = 'Booking_';
 
             $table->bigIncrements($prefix . 'ID');
@@ -26,17 +25,17 @@ return new class extends Migration
 
             $table->foreign('User_ID')
                 ->references('User_ID')
-                ->on($databasePrefix . 'Users')
+                ->on('users')
                 ->onDelete('cascade');
 
             $table->foreign('Provider_ID')
                 ->references('Provider_ID')
-                ->on($databasePrefix . 'Providers')
+                ->on('providers')
                 ->onDelete('cascade');
 
             $table->foreign('Service_ID')
                 ->references('Service_ID')
-                ->on($databasePrefix . 'Services')
+                ->on('services')
                 ->onDelete('cascade');
 
             $table->unique(['Provider_ID', $prefix . 'StartAt']); // Prevent double-booking
@@ -45,7 +44,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        $databasePrefix = "Boo_";
-        Schema::dropIfExists($databasePrefix . 'Bookings');
+        Schema::dropIfExists('bookings');
     }
 };

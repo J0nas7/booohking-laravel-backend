@@ -12,7 +12,7 @@ class ServicesTableMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected string $table = 'Boo_Services';
+    protected string $table = 'services';
 
     #[Test]
     public function it_creates_services_table_with_correct_schema()

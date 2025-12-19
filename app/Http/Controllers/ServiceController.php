@@ -19,7 +19,7 @@ class ServiceController extends BaseController
     {
         return [
             'Service_Name' => 'required|string|max:255',
-            'User_ID' => 'required|exists:Boo_Users,User_ID',
+            'User_ID' => 'required|exists:users,User_ID',
             'Service_DurationMinutes' => 'required|integer|min:1',
             'Service_Description' => 'nullable|string',
         ];

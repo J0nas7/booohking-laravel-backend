@@ -12,7 +12,7 @@ class BookingsTableMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected string $table = 'Boo_Bookings';
+    protected string $table = 'bookings';
 
     #[Test]
     public function it_creates_bookings_table_with_correct_schema()

@@ -146,7 +146,7 @@ class ProviderControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJson(['Provider_Name' => 'Test Provider']);
 
-        $this->assertDatabaseHas('Boo_Providers', ['Provider_Name' => 'Test Provider']);
+        $this->assertDatabaseHas('providers', ['Provider_Name' => 'Test Provider']);
     }
 
     #[Test]
@@ -191,7 +191,7 @@ class ProviderControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['Provider_Name' => 'Updated Name']);
 
-        $this->assertDatabaseHas('Boo_Providers', ['Provider_Name' => 'Updated Name']);
+        $this->assertDatabaseHas('providers', ['Provider_Name' => 'Updated Name']);
     }
 
     #[Test]
@@ -232,7 +232,7 @@ class ProviderControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
-        $this->assertSoftDeleted('Boo_Providers', ['Provider_ID' => $provider->Provider_ID]);
+        $this->assertSoftDeleted('providers', ['Provider_ID' => $provider->Provider_ID]);
     }
 
     #[Test]
@@ -270,7 +270,7 @@ class ProviderControllerTest extends TestCase
             $response->assertStatus(200)
                 ->assertJson(['message' => 'Deleted successfully']);
 
-            $this->assertSoftDeleted('Boo_Providers', ['Provider_ID' => $provider->Provider_ID]);
+            $this->assertSoftDeleted('providers', ['Provider_ID' => $provider->Provider_ID]);
         }
     }
 

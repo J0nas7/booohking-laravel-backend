@@ -12,8 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $databasePrefix = "Boo_";
-        Schema::create($databasePrefix . 'Users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $prefix = 'User_';
 
             $table->bigIncrements($prefix . 'ID');
@@ -51,8 +50,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $databasePrefix = "Boo_";
-        Schema::dropIfExists($databasePrefix . 'Users');
+        Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }

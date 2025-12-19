@@ -114,7 +114,7 @@ class ActivateAccountTest extends AuthServiceTest
         $this->assertEquals('Invalid verification token', $result->error);
 
         // Since the user doesn't exist, no database changes should have been made, so no user with this token should exist
-        $this->assertDatabaseMissing('Boo_Users', [
+        $this->assertDatabaseMissing('users', [
             'User_Email_Verification_Token' => $invalidToken,
         ]);
     }

@@ -18,9 +18,7 @@ class ProviderWorkingHoursSeederTest extends TestCase
     #[Test]
     public function it_seeds_provider_working_hours_correctly()
     {
-        $databasePrefix = "Boo_";
-
-        // First, create users and seed some providers
+        // Run seeders
         User::factory()->create();
         Service::factory()->create();
         $this->seed(\Database\Seeders\ProvidersSeeder::class);
@@ -33,14 +31,14 @@ class ProviderWorkingHoursSeederTest extends TestCase
         foreach ($providers as $provider) {
             // Weekdays: Monday (1) to Friday (5)
             for ($day = 1; $day <= 5; $day++) {
-                $this->assertDatabaseHas($databasePrefix . 'ProviderWorkingHours', [
+                $this->assertDatabaseHas('provider_working_hours', [
                     'Provider_ID' => $provider->Provider_ID,
                     'PWH_DayOfWeek' => $day
                 ]);
             }
 
             // Saturday (6)
-            $this->assertDatabaseHas($databasePrefix . 'ProviderWorkingHours', [
+            $this->assertDatabaseHas('provider_working_hours', [
                 'Provider_ID' => $provider->Provider_ID,
                 'PWH_DayOfWeek' => 6
             ]);
@@ -48,6 +46,6 @@ class ProviderWorkingHoursSeederTest extends TestCase
 
         // Optional: Assert total number of working hours inserted
         $expectedCount = ($providers->count() * 6); // 5 weekdays + 1 Saturday
-        $this->assertDatabaseCount($databasePrefix . 'ProviderWorkingHours', $expectedCount);
+        $this->assertDatabaseCount('provider_working_hours', $expectedCount);
     }
 }

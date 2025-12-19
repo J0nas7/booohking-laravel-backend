@@ -21,7 +21,7 @@ class ProviderWorkingHourController extends BaseController
     protected function rules(): array
     {
         return [
-            'Provider_ID' => 'required|exists:Boo_Providers,Provider_ID',
+            'Provider_ID' => 'required|exists:providers,Provider_ID',
             'PWH_DayOfWeek' => 'required|integer|min:0|max:6', // 0=Sunday, 6=Saturday
             'PWH_StartTime' => 'required|date_format:H:i',
             'PWH_EndTime' => 'required|date_format:H:i|after:PWH_StartTime',

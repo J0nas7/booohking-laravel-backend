@@ -9,8 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $databasePrefix = "Boo_";
-        Schema::create($databasePrefix . 'Services', function (Blueprint $table) use ($databasePrefix) {
+        Schema::create('services', function (Blueprint $table) {
             $prefix = 'Service_';
 
             $table->bigIncrements($prefix . 'ID');
@@ -23,14 +22,13 @@ return new class extends Migration
 
             $table->foreign('User_ID')
                 ->references('User_ID')
-                ->on($databasePrefix . 'Users')
+                ->on('users')
                 ->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        $databasePrefix = "Boo_";
-        Schema::dropIfExists($databasePrefix . 'Services');
+        Schema::dropIfExists('services');
     }
 };

@@ -18,8 +18,6 @@ class BookingsSeederTest extends TestCase
     #[Test]
     public function it_seeds_bookings_table_correctly()
     {
-        $databasePrefix = "Boo_";
-
         // Create test data
         $service = Service::factory()->create(['Service_DurationMinutes' => 60]);
         $provider = Provider::factory()->forService($service)->create();
@@ -28,7 +26,7 @@ class BookingsSeederTest extends TestCase
         $this->seed(BookingsSeeder::class);
 
         // Assert at least one booking exists
-        $this->assertDatabaseHas($databasePrefix . 'Bookings', [
+        $this->assertDatabaseHas('bookings', [
             'Provider_ID' => $provider->Provider_ID,
             'Service_ID' => $service->Service_ID,
             'Booking_Status' => 'booked',

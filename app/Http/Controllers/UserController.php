@@ -22,8 +22,8 @@ class UserController extends BaseController
     {
         return [
             'User_Name'    => 'required|string|max:255',
-            'email'   => 'email|unique:Boo_Users,email',
-            'User_Email'   => 'required|email|unique:Boo_Users,User_Email',
+            'email'   => 'email|unique:users,email',
+            'User_Email'   => 'required|email|unique:users,User_Email',
             'User_Password' => 'min:6|confirmed', // expects User_Password_confirmation
             'User_Role'    => 'nullable|in:ROLE_ADMIN,ROLE_USER',
         ];

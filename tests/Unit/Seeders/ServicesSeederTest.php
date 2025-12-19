@@ -15,16 +15,14 @@ class ServicesSeederTest extends TestCase
     #[Test]
     public function it_seeds_services_table_correctly()
     {
-        $databasePrefix = "Boo_";
-
         // Run the seeder
         $this->seed(ServicesSeeder::class);
 
         // Assert total number of services inserted
-        $this->assertDatabaseCount($databasePrefix . 'Services', 6);
+        $this->assertDatabaseCount('services', 6);
 
         // Assert specific services
-        $this->assertDatabaseHas($databasePrefix . 'Services', [
+        $this->assertDatabaseHas('services', [
             'User_ID' => 1,
         ]);
     }

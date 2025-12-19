@@ -19,9 +19,9 @@ class BookingController extends BaseController
     protected function rules(): array
     {
         return [
-            'User_ID' => 'required|exists:Boo_Users,User_ID',
-            'Provider_ID' => 'required|exists:Boo_Providers,Provider_ID',
-            'Service_ID' => 'required|exists:Boo_Services,Service_ID',
+            'User_ID' => 'required|exists:users,User_ID',
+            'Provider_ID' => 'required|exists:providers,Provider_ID',
+            'Service_ID' => 'required|exists:services,Service_ID',
             'Booking_StartAt' => 'required|date|after:now',
             'Booking_EndAt' => 'required|date|after:Booking_StartAt',
             'Booking_Status' => 'sometimes|in:booked,cancelled',

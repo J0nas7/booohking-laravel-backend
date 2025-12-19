@@ -22,7 +22,7 @@ class ProviderController extends BaseController
     {
         return [
             'Provider_Name' => 'required|string|max:255',
-            'Service_ID' => 'required|exists:Boo_Services,Service_ID',
+            'Service_ID' => 'required|exists:services,Service_ID',
             // Optional: validate working hours if you allow input directly
             // 'Working_Hours' => 'array',
         ];

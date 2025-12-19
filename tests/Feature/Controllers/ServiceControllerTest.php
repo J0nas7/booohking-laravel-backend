@@ -284,7 +284,7 @@ class ServiceControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonFragment(['Service_Name' => 'Boat Cleaning']);
 
-        $this->assertDatabaseHas('Boo_Services', [
+        $this->assertDatabaseHas('services', [
             'Service_Name' => 'Boat Cleaning',
             'Service_DurationMinutes' => 45,
         ]);
@@ -329,7 +329,7 @@ class ServiceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonFragment(['Service_Name' => 'Updated Name']);
 
-        $this->assertDatabaseHas('Boo_Services', [
+        $this->assertDatabaseHas('services', [
             'Service_ID' => $service->Service_ID,
             'Service_Name' => 'Updated Name',
         ]);
@@ -420,7 +420,7 @@ class ServiceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
-        $this->assertSoftDeleted('Boo_Services', [
+        $this->assertSoftDeleted('services', [
             'Service_ID' => $service->Service_ID,
         ]);
     }
