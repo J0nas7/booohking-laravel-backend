@@ -50,9 +50,9 @@ Route::group(['middleware' => $publicApiMiddleware], function () {
     Route::prefix('auth')->controller(AuthController::class)->group(function () {
         Route::post('register', 'register')->name('auth.register');
         Route::post('activate-account', 'activate');
-        Route::post('login', 'login')->name('login')->middleware('throttle:login');
-        Route::post('forgot-password', 'forgotPassword')->middleware('throttle:password-reset');
-        Route::post('reset-password', 'resetPassword')->middleware('throttle:password-reset');
+        Route::post('login', 'login')->middleware('throttle:login')->name('login');
+        Route::post('forgot-password', 'forgotPassword')->middleware('throttle:password-reset')->name('password.email');
+        Route::post('reset-password', 'resetPassword')->middleware('throttle:password-reset')->name('password.reset');
         Route::post('clone-token', 'cloneToken')->middleware('throttle:jwt');
         Route::post('logout', 'logout')->name('auth.logout');
         Route::get('me', 'me')->middleware('auth:api')->name('auth.me');

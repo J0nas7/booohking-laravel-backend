@@ -12,7 +12,10 @@ class ServicesSeeder extends Seeder
     {
         // Get or create service owner
         $user = User::firstOrCreate(
-            ['User_Email' => 'jonas-adm@booohking.com'],
+            [
+                'email' => 'jonas-adm@booohking.com',
+                'User_Email' => 'jonas-adm@booohking.com'
+            ],
             [
                 'User_Name' => 'Admin',
                 'User_Password' => bcrypt('password'),

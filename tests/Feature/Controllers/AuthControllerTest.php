@@ -3,7 +3,10 @@
 namespace Tests\Feature\Controllers;
 
 use App\Models\User;
+use App\Notifications\ForgotPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use PHPUnit\Framework\Attributes\Test;
@@ -263,17 +266,32 @@ class AuthControllerTest extends TestCase
     #[Test]
     public function user_can_reset_password_with_valid_token()
     {
-        // ==== Arrange ====
+        // Arrange
+        Notification::fake();
         $password = "newpassword123";
         $user = User::factory()->create([
-            'User_Email' => 'test@example.com',
-            'User_Remember_Token' => 'ABC123ABC123ABC1',
+            'email' => 'test@example.com',
+            'User_Email' => 'test@example.com'
         ]);
 
+        // Send reset link (this generates a token and "sends" email)
+        Password::sendResetLink(['email' => $user->User_Email]);
+
+        // Assert notification was "sent"
+        Notification::assertSentTo(
+            [$user],
+            ForgotPasswordNotification::class,
+            function ($notification, $channels) use (&$token) {
+                $token = $notification->getToken();
+                return in_array('mail', $channels);
+            }
+        );
+
         $data = [
-            'User_Remember_Token' => 'ABC123ABC123ABC1',
-            'New_User_Password' => $password,
-            'New_User_Password_confirmation' => $password,
+            'email' => $user->User_Email,
+            'token' => $token,
+            'password' => $password,
+            'password_confirmation' => $password,
         ];
 
         // ==== Act ====

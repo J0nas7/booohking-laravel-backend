@@ -64,6 +64,7 @@ class UserTest extends TestCase
     public function test_create_user_success()
     {
         $userData = [
+            'email'            => 'test@example.com',
             'User_Email'            => 'test@example.com',
             'User_Name'             => 'Test User',
             'User_Password'         => 'password',

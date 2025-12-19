@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigIncrements($prefix . 'ID');
             $table->string($prefix . 'Name', 255);
             $table->string($prefix . 'Email', 255)->unique();
+            $table->string('email', 255)->unique();
             $table->string($prefix . 'Password', 255);
             $table->string($prefix . 'Remember_Token', 100)->nullable();
             $table->string($prefix . 'Email_Verification_Token')->nullable();

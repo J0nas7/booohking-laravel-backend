@@ -3,36 +3,54 @@
 namespace App\Actions\SendResetToken;
 
 use App\Helpers\ServiceResponse;
-use App\Models\User;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class SendResetToken
 {
-    public function __construct(
-        protected GenerateResetToken $tokenGenerator,
-        protected SendResetEmail $emailSender
-    ) {}
-
     public function execute(array $validated): ServiceResponse
     {
-        $user = User::where('User_Email', $validated['User_Email'])->first();
+        try {
+            $response = Password::sendResetLink([
+                'User_Email' => $validated['User_Email'],
+            ]);
+        } catch (TransportExceptionInterface $e) {
+            // Log full details for devs
+            Log::error('Password reset email failed', [
+                'email' => $validated['User_Email'],
+                'exception' => $e->getMessage(),
+            ]);
 
-        if (!$user) {
+            // Safe, frontend-friendly message
             return new ServiceResponse(
-                errors: ['User_Email' => 'User not found.'],
-                status: 404
+                error: 'We could not send the password reset email at this time. Please try again later.',
+                status: 503
             );
         }
 
-        $token = $this->tokenGenerator->execute($user);
-        $emailResult = $this->emailSender->execute($user, $token);
+        if ($response === Password::RESET_LINK_SENT) {
+            return new ServiceResponse(
+                message: 'If an account with that email exists, a password reset link has been sent.',
+                status: 200
+            );
+        }
 
-        return new ServiceResponse(
-            data: [
-                'email_status' => $emailResult['status'],
-                'user' => $user,
-                'token' => $emailResult['token'],
-            ],
-            message: 'Password reset token sent.',
-        );
+        return match ($response) {
+            Password::INVALID_USER => new ServiceResponse(
+                error: 'If an account with that email exists, a password reset link has been sent.',
+                status: 200
+            ),
+
+            Password::RESET_THROTTLED => new ServiceResponse(
+                error: 'Please wait before requesting another password reset email.',
+                status: 429
+            ),
+
+            default => new ServiceResponse(
+                error: 'Unable to send password reset email. Please try again later.',
+                status: 400
+            ),
+        };
     }
 }

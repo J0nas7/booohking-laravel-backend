@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Notifications\ForgotPasswordNotification;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,7 +19,7 @@ class User extends Authenticatable implements JWTSubject
     protected $primaryKey = "User_ID";
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, CanResetPassword;
 
     /**
      * The attributes that are mass assignable.
@@ -25,6 +28,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'User_Name',
+        'email',
         'User_Email',
         'User_Password',
     ];
@@ -67,6 +71,26 @@ class User extends Authenticatable implements JWTSubject
     public function getRememberToken()
     {
         return $this->User_Remember_Token;
+    }
+
+    public function getEmailForPasswordReset()
+    {
+        return $this->User_Email;
+    }
+
+    public function getEmailAttribute()
+    {
+        return $this->User_Email;
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ForgotPasswordNotification($token));
+    }
+
+    public function routeNotificationForMail($notification = null)
+    {
+        return $this->User_Email;
     }
 
     public function setRememberToken($value)

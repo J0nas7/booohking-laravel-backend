@@ -3,7 +3,12 @@
 namespace Tests\Unit\Services\AuthServiceTest;
 
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use App\Notifications\ForgotPasswordNotification;
+use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Unit\Services\AuthServiceTest;
 
@@ -11,76 +16,82 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
 {
     use RefreshDatabase;
 
-    // No need to mock Auth, JWTAuth, or services, since they're handled by the base class
     protected function setUp(): void
     {
-        parent::setUp();  // This ensures the parent class's setup is called
+        parent::setUp();
+
+        $this->authService = new AuthService(
+            app()->make(\Illuminate\Contracts\Mail\Mailer::class),
+            app()->make(\Illuminate\Contracts\Hashing\Hasher::class),
+            $this->registerUser,
+            $this->sendResetToken
+        );
     }
 
     #[Test]
-    public function it_resets_password_with_valid_token()
+    public function it_resets_password_with_valid_token(): void
     {
-        // ---- Arrange ----
-        $password = "newpassword123";
+        // Arrange
+        Notification::fake();
+
         $user = User::factory()->create([
+            'email' => 'test@example.com',
             'User_Email' => 'test@example.com',
-            'User_Remember_Token' => 'ABC123ABC123ABC1',
         ]);
 
+        // Send reset link (this generates a token and "sends" email)
+        Password::sendResetLink(['email' => $user->User_Email]);
+
+        // Assert notification was "sent"
+        Notification::assertSentTo(
+            [$user],
+            ForgotPasswordNotification::class,
+            function ($notification, $channels) use (&$token) {
+                $token = $notification->getToken();
+                return in_array('mail', $channels);
+            }
+        );
+
+        $newPassword = 'newpassword123';
+
         $data = [
-            'User_Remember_Token' => 'ABC123ABC123ABC1',
-            'New_User_Password' => $password,
-            'New_User_Password_confirmation' => $password,
+            'email' => $user->User_Email,
+            'token' => $token,
+            'password' => $newPassword,
+            'password_confirmation' => $newPassword,
         ];
 
-        // Hasher expectation
-        $this->hasher
-            ->shouldReceive('make')
-            ->once()
-            ->with($password)
-            ->andReturn('new-hashed-password');
-
-        // ---- Act ----
+        // Act
         $result = $this->authService->resetPasswordWithToken($data);
 
-        // ---- Assert ----
+        // Refresh user from DB
         $userFresh = User::find($user->User_ID);
-        $this->assertNull($result->errors);
+
+        // Assert
         $this->assertEquals('', $result->error);
-        $this->assertEquals(
-            'Password reset successfully',
-            $result->message
-        );
-
-        $this->assertDatabaseHas('Boo_Users', [
-            'User_ID' => $user->User_ID,
-            'User_Remember_Token' => null,
-        ]);
-
-        // Assert it looks like a bcrypt hash
-        $this->assertMatchesRegularExpression(
-            '/^\$2y\$\d{2}\$[\.\/A-Za-z0-9]{53}$/',
-            $userFresh->User_Password
-        );
+        $this->assertEquals('Password reset successfully.', $result->message);
+        $this->assertTrue(Hash::check($newPassword, $userFresh->User_Password));
+        $this->assertNull($userFresh->User_Remember_Token);
     }
 
     #[Test]
-    public function it_fails_to_reset_password_with_invalid_token()
+    public function it_fails_with_invalid_token(): void
     {
         $user = User::factory()->create([
+            'email' => 'test@example.com',
             'User_Email' => 'test@example.com',
-            'User_Remember_Token' => 'ABC123ABC123ABC1',
         ]);
 
         $data = [
-            'User_Remember_Token' => '123ABC123ABC123A',
-            'New_User_Password' => 'newpassword123',
-            'New_User_Password_confirmation' => 'newpassword123',
+            'email' => $user->User_Email,
+            'token' => 'invalid-token',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
         ];
 
         $result = $this->authService->resetPasswordWithToken($data);
 
-        $this->assertObjectHasProperty('error', $result);
-        $this->assertEquals('Invalid token.', $result->error);
+        $this->assertNotEmpty($result->error);
+        $this->assertEquals('The reset token is invalid or has expired.', $result->error);
     }
 }

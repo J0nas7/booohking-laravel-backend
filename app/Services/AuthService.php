@@ -12,6 +12,9 @@ use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Hashing\Hasher;
 use App\Helpers\ServiceResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 
 class AuthService
 {
@@ -117,22 +120,26 @@ class AuthService
      */
     public function resetPasswordWithToken(array $validated): ServiceResponse
     {
-        $user = User::where('User_Remember_Token', $validated['User_Remember_Token'])->first();
+        $response = Password::reset(
+            $validated,
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'User_Password' => $this->hasher->make($password),
+                    'User_Remember_Token' => null,
+                ])->save();
+            }
+        );
 
-        if (!$user) {
+        if ($response === Password::PASSWORD_RESET) {
             return new ServiceResponse(
-                error: 'Invalid token.',
-                status: 401
+                message: 'Password reset successfully.',
+                status: 200
             );
         }
 
-        // Update the password
-        $user->User_Password = $this->hasher->make($validated['New_User_Password']);
-        $user->User_Remember_Token = null; // Clear token
-        $user->save();
-
         return new ServiceResponse(
-            message: 'Password reset successfully'
+            error: 'The reset token is invalid or has expired.',
+            status: 401
         );
     }
 

@@ -22,8 +22,9 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'User_Remember_Token' => 'required|string|size:16',
-            'New_User_Password'   => 'required|string|min:6|confirmed',
+            'email' => 'required|email|exists:Boo_Users,User_Email',
+            'token' => 'required|string|size:64',
+            'password' => 'required|string|min:6|confirmed',
         ];
     }
 
@@ -33,11 +34,15 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'User_Remember_Token.required' => 'The reset token is required.',
-            'User_Remember_Token.size'     => 'The reset token must be 16 characters.',
-            'New_User_Password.required'   => 'A new password is required.',
-            'New_User_Password.min'        => 'The password must be at least 6 characters.',
-            'New_User_Password.confirmed'  => 'The password confirmation does not match.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please provide a valid email address.',
+
+            'token.required' => 'The reset token is required.',
+            'token.size'     => 'The reset token must be 64 characters.',
+
+            'password.required' => 'A new password is required.',
+            'password.min' => 'The password must be at least 6 characters.',
+            'password.confirmed' => 'The password confirmation does not match.',
         ];
     }
 }

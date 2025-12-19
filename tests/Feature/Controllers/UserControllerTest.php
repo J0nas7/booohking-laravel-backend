@@ -60,6 +60,7 @@ class UserControllerTest extends TestCase
     {
         $payload = [
             'User_Name' => 'New User',
+            'email' => 'newuser@example.com',
             'User_Email' => 'newuser@example.com',
             'User_Password' => 'secret123',
             'User_Password_confirmation' => 'secret123',
