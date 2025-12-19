@@ -23,7 +23,7 @@ class UserFactory extends Factory
             'User_CreatedAt'        => now(),
             'User_UpdatedAt'        => now(),
             'User_DeletedAt'        => null,
-            'User_Role'             => 'ROLE_USER', // default role
+            'role'             => 'ROLE_USER', // default role
         ];
     }
 
@@ -33,7 +33,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn() => [
-            'User_Role' => 'ROLE_ADMIN',
+            'role' => 'ROLE_ADMIN',
         ]);
     }
 

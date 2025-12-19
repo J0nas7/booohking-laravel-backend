@@ -63,7 +63,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function isAdmin(): bool
     {
-        return $this->User_Role === 'ROLE_ADMIN';
+        return $this->role === 'ROLE_ADMIN';
     }
 
     public function getEmailForPasswordReset()

@@ -44,7 +44,7 @@ class CreateUserTest extends RegisterUserTest
 
         $this->assertDatabaseHas('users', [
             'User_Email' => 'test@example.com',
-            'User_Role' => 'ROLE_USER'
+            'role' => 'ROLE_USER'
         ]);
 
         $this->assertNotNull($user->email_verification_token);

@@ -23,13 +23,13 @@ class UserControllerTest extends TestCase
         // Make admin
         $this->admin = User::factory()->create([
             'User_Email' => 'admin@example.com',
-            'User_Role' => 'ROLE_ADMIN'
+            'role' => 'ROLE_ADMIN'
         ]);
 
         // Make normal user
         $this->user = User::factory()->create([
             'User_Email' => 'user@example.com',
-            'User_Role' => 'ROLE_USER'
+            'role' => 'ROLE_USER'
         ]);
     }
 
@@ -64,7 +64,7 @@ class UserControllerTest extends TestCase
             'User_Email' => 'newuser@example.com',
             'User_Password' => 'secret123',
             'User_Password_confirmation' => 'secret123',
-            'User_Role' => 'ROLE_USER',
+            'role' => 'ROLE_USER',
         ];
 
         $response = $this->withHeaders($this->authHeaders($this->user))
@@ -137,7 +137,7 @@ class UserControllerTest extends TestCase
             'User_Email' => 'updated@example.com',
             'User_Password' => 'newpass123',
             'User_Password_confirmation' => 'newpass123',
-            'User_Role' => 'ROLE_ADMIN',
+            'role' => 'ROLE_ADMIN',
         ];
 
         $response = $this->withHeaders($this->authHeaders($this->user))

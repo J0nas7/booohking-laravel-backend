@@ -26,8 +26,8 @@ class BookingControllerTest extends TestCase
         parent::setUp();
 
         // Seed users, provider, and service
-        $this->admin = User::factory()->create(['User_Role' => 'ROLE_ADMIN']);
-        $this->user = User::factory()->create(['User_Role' => 'ROLE_USER']);
+        $this->admin = User::factory()->create(['role' => 'ROLE_ADMIN']);
+        $this->user = User::factory()->create(['role' => 'ROLE_USER']);
 
         $this->provider = Provider::factory()->create();
         $this->service = Service::factory()->create(['Service_DurationMinutes' => 60]);

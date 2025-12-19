@@ -31,7 +31,7 @@ class UserTest extends TestCase
      */
     public function test_admin_get_user_by_id()
     {
-        $user = User::factory()->create(['User_Role' => 'ROLE_ADMIN']);
+        $user = User::factory()->create(['role' => 'ROLE_ADMIN']);
         $token = JWTAuth::fromUser($user);
 
         $response = $this->withHeaders([
@@ -47,7 +47,7 @@ class UserTest extends TestCase
      */
     public function test_get_user_by_invalid_id()
     {
-        $user = User::factory()->create(['User_Role' => 'ROLE_ADMIN']);
+        $user = User::factory()->create(['role' => 'ROLE_ADMIN']);
         $token = JWTAuth::fromUser($user);
 
         $response = $this->withHeaders([

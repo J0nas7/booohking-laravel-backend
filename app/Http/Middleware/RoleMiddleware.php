@@ -17,7 +17,7 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, $role): Response
     {
         $user = Auth::guard('api')->user();
-        if (!$user || $user->User_Role !== $role) {
+        if (!$user || $user->role !== $role) {
             return response()->json(['error' => 'Forbidden'], 403);
         }
 

@@ -25,7 +25,7 @@ class UserController extends BaseController
             'email'   => 'email|unique:users,email',
             'User_Email'   => 'required|email|unique:users,User_Email',
             'User_Password' => 'min:6|confirmed', // expects User_Password_confirmation
-            'User_Role'    => 'nullable|in:ROLE_ADMIN,ROLE_USER',
+            'role'    => 'nullable|in:ROLE_ADMIN,ROLE_USER',
         ];
     }
 

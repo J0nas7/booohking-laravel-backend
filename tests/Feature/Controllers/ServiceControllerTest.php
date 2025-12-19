@@ -23,8 +23,8 @@ class ServiceControllerTest extends TestCase
         parent::setUp();
 
         // Regular user and admin user
-        $this->user = User::factory()->create(['User_Role' => 'ROLE_USER']);
-        $this->admin = User::factory()->create(['User_Role' => 'ROLE_ADMIN']);
+        $this->user = User::factory()->create(['role' => 'ROLE_USER']);
+        $this->admin = User::factory()->create(['role' => 'ROLE_ADMIN']);
     }
 
     protected function authHeaders($user)

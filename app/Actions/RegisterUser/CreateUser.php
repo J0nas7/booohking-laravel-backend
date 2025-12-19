@@ -25,7 +25,7 @@ class CreateUser
             $userData['User_Password'] = $this->hasher->make($userData['User_Password']);
         }
 
-        $userData['User_Role'] = $userData['User_Role'] ?? 'ROLE_USER';
+        $userData['role'] = $userData['role'] ?? 'ROLE_USER';
 
         $user = User::create($userData);
 

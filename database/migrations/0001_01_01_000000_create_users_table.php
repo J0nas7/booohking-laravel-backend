@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('email_verification_token')->nullable();
             $table->dateTime('email_verified_at', 255)->nullable();
 
-            $table->enum($prefix . 'Role', ['ROLE_ADMIN', 'ROLE_USER'])->default('ROLE_USER');
+            $table->enum('role', ['ROLE_ADMIN', 'ROLE_USER'])->default('ROLE_USER');
 
             MigrationHelper::addDateTimeFields($table, $prefix);
         });

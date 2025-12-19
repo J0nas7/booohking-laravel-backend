@@ -145,7 +145,7 @@ class BookingController extends BaseController
         $query = ($this->modelClass)::query()->with($this->with);
 
         // Non-admins see only their own bookings
-        if ($user->User_Role !== 'ROLE_ADMIN') {
+        if ($user->role !== 'ROLE_ADMIN') {
             $query->where('User_ID', $user->User_ID);
         }
 
@@ -196,7 +196,7 @@ class BookingController extends BaseController
         $user = $request->user();
 
         // Only admins or owner can view
-        if ($user->User_Role !== 'ROLE_ADMIN' && $item->User_ID !== $user->User_ID) {
+        if ($user->role !== 'ROLE_ADMIN' && $item->User_ID !== $user->User_ID) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -209,7 +209,7 @@ class BookingController extends BaseController
         $item = ($this->modelClass)::findOrFail($id);
         $user = $request->user();
 
-        if ($user->User_Role !== 'ROLE_ADMIN' && $item->User_ID !== $user->User_ID) {
+        if ($user->role !== 'ROLE_ADMIN' && $item->User_ID !== $user->User_ID) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -251,7 +251,7 @@ class BookingController extends BaseController
         $user = $request->user();
 
         // Only admin or owner can cancel
-        if ($user->User_Role !== 'ROLE_ADMIN' && $booking->User_ID !== $user->User_ID) {
+        if ($user->role !== 'ROLE_ADMIN' && $booking->User_ID !== $user->User_ID) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

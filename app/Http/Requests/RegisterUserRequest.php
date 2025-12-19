@@ -26,7 +26,7 @@ class RegisterUserRequest extends FormRequest
             'User_Email'    => 'required|email|unique:users,User_Email',
             'User_Password' => 'required|min:6|confirmed',
             'User_Name'     => 'required|string|max:255',
-            'User_Role'     => 'nullable|in:ROLE_ADMIN,ROLE_USER',
+            'role'     => 'nullable|in:ROLE_ADMIN,ROLE_USER',
         ];
     }
 
@@ -45,7 +45,7 @@ class RegisterUserRequest extends FormRequest
             'User_Password.confirmed' => 'The password confirmation does not match.',
             'User_Name.required'   => 'The name field is required.',
             'User_Name.max'        => 'The name may not be greater than 255 characters.',
-            'User_Role.in'         => 'The selected role is invalid.',
+            'role.in'         => 'The selected role is invalid.',
         ];
     }
 }

@@ -22,8 +22,8 @@ class ProviderControllerTest extends TestCase
         parent::setUp();
 
         // Create an admin and a regular user
-        $this->admin = User::factory()->create(['User_Role' => 'ROLE_ADMIN']);
-        $this->user = User::factory()->create(['User_Role' => 'ROLE_USER']);
+        $this->admin = User::factory()->create(['role' => 'ROLE_ADMIN']);
+        $this->user = User::factory()->create(['role' => 'ROLE_USER']);
     }
 
     protected function authHeaders(User $user): array
