@@ -18,11 +18,11 @@ class CreateUser
             'name' => $data['name'] ?? null,
             'email' => $data['User_Email'] ?? null,
             'User_Email' => $data['User_Email'] ?? null,
-            'User_Password' => $data['User_Password'] ?? null,
+            'password' => $data['password'] ?? null,
         ];
 
-        if (isset($userData['User_Password'])) {
-            $userData['User_Password'] = $this->hasher->make($userData['User_Password']);
+        if (isset($userData['password'])) {
+            $userData['password'] = $this->hasher->make($userData['password']);
         }
 
         $userData['role'] = $userData['role'] ?? 'ROLE_USER';

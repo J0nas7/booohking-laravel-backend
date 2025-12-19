@@ -24,13 +24,13 @@ class AuthenticateUserTest extends AuthServiceTest
         // ---- Arrange ----
         $user = User::factory()->create([
             'User_Email' => 'test@example.com',
-            'User_Password' => 'hashed-password',
+            'password' => 'hashed-password',
             'email_verified_at' => now(),
         ]);
 
         $credentials = [
             'User_Email' => 'test@example.com',
-            'User_Password' => 'password123',
+            'password' => 'password123',
         ];
 
         Auth::shouldReceive('guard->attempt')
@@ -59,7 +59,7 @@ class AuthenticateUserTest extends AuthServiceTest
     {
         $credentials = [
             'User_Email' => 'test@example.com',
-            'User_Password' => 'wrong-password',
+            'password' => 'wrong-password',
         ];
 
         Auth::shouldReceive('guard->attempt')

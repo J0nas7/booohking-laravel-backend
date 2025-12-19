@@ -70,7 +70,7 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
         // Assert
         $this->assertEquals('', $result->error);
         $this->assertEquals('Password reset successfully.', $result->message);
-        $this->assertTrue(Hash::check($newPassword, $userFresh->User_Password));
+        $this->assertTrue(Hash::check($newPassword, $userFresh->password));
     }
 
     #[Test]

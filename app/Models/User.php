@@ -30,7 +30,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'User_Email',
-        'User_Password',
+        'password',
     ];
 
     /**
@@ -39,7 +39,7 @@ class User extends Authenticatable implements JWTSubject
      * @var list<string>
      */
     protected $hidden = [
-        'User_Password',
+        'password',
     ];
 
     /**
@@ -52,7 +52,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verification_token' => 'string',
             'email_verified_at' => 'datetime',
-            'User_Password' => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
@@ -89,12 +89,6 @@ class User extends Authenticatable implements JWTSubject
     public function  getDeletedAtColumn()
     {
         return 'User_DeletedAt';
-    }
-
-    // The database field that should be returned on Eloquent's request
-    public function getAuthPassword()
-    {
-        return $this->User_Password;
     }
 
     /**

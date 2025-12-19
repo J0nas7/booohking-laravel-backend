@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string($prefix . 'Email', 255)->unique();
             $table->string('email', 255)->unique();
-            $table->string($prefix . 'Password', 255);
+            $table->string('password', 255);
             $table->string('email_verification_token')->nullable();
             $table->dateTime('email_verified_at', 255)->nullable();
 

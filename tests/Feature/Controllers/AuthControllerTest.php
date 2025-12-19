@@ -23,8 +23,8 @@ class AuthControllerTest extends TestCase
             'acceptTerms' => true,
             'name' => 'John Doe',
             'User_Email' => 'john@example.com',
-            'User_Password' => 'password123',
-            'User_Password_confirmation' => 'password123'
+            'password' => 'password123',
+            'password_confirmation' => 'password123'
         ];
 
         $response = $this->postJson('/api/auth/register', $data);
@@ -48,7 +48,7 @@ class AuthControllerTest extends TestCase
         $data = [
             'name' => 'John Doe',
             'User_Email' => 'john@example.com',
-            'User_Password' => 'password123',
+            'password' => 'password123',
         ];
 
         $response = $this->postJson('/api/auth/register', $data);
@@ -62,7 +62,7 @@ class AuthControllerTest extends TestCase
     public function user_can_login_successfully()
     {
         $user = User::factory()->create([
-            'User_Password' => bcrypt('password123')
+            'password' => bcrypt('password123')
         ]);
 
         $response = $this->postJson('/api/auth/login', [
@@ -78,7 +78,7 @@ class AuthControllerTest extends TestCase
     public function cannot_login_with_invalid_credentials()
     {
         $user = User::factory()->create([
-            'User_Password' => bcrypt('password123'),
+            'password' => bcrypt('password123'),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
@@ -94,7 +94,7 @@ class AuthControllerTest extends TestCase
     public function login_is_throttled_after_too_many_attempts()
     {
         $user = User::factory()->create([
-            'User_Password' => bcrypt('password123'),
+            'password' => bcrypt('password123'),
         ]);
 
         // 5 allowed attempts

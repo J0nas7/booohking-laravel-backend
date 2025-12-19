@@ -24,7 +24,7 @@ class UserController extends BaseController
             'name'    => 'required|string|max:255',
             'email'   => 'email|unique:users,email',
             'User_Email'   => 'required|email|unique:users,User_Email',
-            'User_Password' => 'min:6|confirmed', // expects User_Password_confirmation
+            'password' => 'min:6|confirmed', // expects password_confirmation
             'role'    => 'nullable|in:ROLE_ADMIN,ROLE_USER',
         ];
     }
@@ -51,7 +51,7 @@ class UserController extends BaseController
         $data = $request->validate($this->rules());
 
         // Hash the password
-        $data['User_Password'] = Hash::make($data['User_Password']);
+        $data['password'] = Hash::make($data['password']);
 
         $user = ($this->modelClass)::create($data);
 
@@ -79,8 +79,8 @@ class UserController extends BaseController
         $data = $request->validate($this->rules());
 
         // Hash password if present
-        if (isset($data['User_Password'])) {
-            $data['User_Password'] = Hash::make($data['User_Password']);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         }
 
         $user->update($data);

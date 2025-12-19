@@ -20,8 +20,8 @@ class AuthTest extends TestCase
         $data = [
             'acceptTerms' => true,
             'User_Email' => 'test@example.com',
-            'User_Password' => 'password123',
-            'User_Password_confirmation' => 'password123',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
             'name' => 'Jonas from Booohking',
         ];
 
@@ -41,7 +41,7 @@ class AuthTest extends TestCase
     {
         $data = [
             'User_Email' => 'invalid-email',
-            'User_Password' => 'short',
+            'password' => 'short',
         ];
 
         $response = $this->postJson('/api/auth/register', $data);
@@ -56,7 +56,7 @@ class AuthTest extends TestCase
     public function test_login_user_success()
     {
         $password = 'password123';
-        $user = User::factory()->create(['User_Password' => bcrypt($password)]);
+        $user = User::factory()->create(['password' => bcrypt($password)]);
 
         $response = $this->postJson('/api/auth/login', [
             'User_Email' => $user->User_Email,
@@ -140,7 +140,7 @@ class AuthTest extends TestCase
 
         $data = [
             'User_Email' => 'test@example.com',
-            'User_Password' => 'password123',
+            'password' => 'password123',
             'User_Status' => 1,
         ];
 

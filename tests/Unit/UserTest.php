@@ -67,8 +67,8 @@ class UserTest extends TestCase
             'email'            => 'test@example.com',
             'User_Email'            => 'test@example.com',
             'name'             => 'Test User',
-            'User_Password'         => 'password',
-            'User_Password_confirmation' => 'password',
+            'password'         => 'password',
+            'password_confirmation' => 'password',
             'User_CreatedAt'        => now(),
             'User_UpdatedAt'        => now(),
             'User_DeletedAt'        => null, // Optional
@@ -87,7 +87,7 @@ class UserTest extends TestCase
     {
         $userData = [
             'User_Email' => 'invalid_email',
-            'User_Password' => 'short',
+            'password' => 'short',
         ];
 
         $response = $this->postJson('/api/users', $userData);
@@ -157,7 +157,7 @@ class UserTest extends TestCase
         User::factory()->create(['User_Email' => 'test@example.com']);
         $userData = [
             'User_Email' => 'test@example.com',
-            'User_Password' => 'password123',
+            'password' => 'password123',
         ];
 
         $response = $this->postJson('/api/users', $userData);

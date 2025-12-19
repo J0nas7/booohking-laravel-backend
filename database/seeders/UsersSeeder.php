@@ -14,7 +14,7 @@ class UsersSeeder extends Seeder
             'name' => 'Jonas Admin',
             'email' => 'jonas-adm@booohking.com',
             'User_Email' => 'jonas-adm@booohking.com',
-            'User_Password' => bcrypt('abc123def'), // optional override
+            'password' => bcrypt('abc123def'), // optional override
         ]);
 
         // Create one regular user
@@ -22,7 +22,7 @@ class UsersSeeder extends Seeder
             'name' => 'Jonas User',
             'email' => 'jonas-usr@booohking.com',
             'User_Email' => 'jonas-usr@booohking.com',
-            'User_Password' => bcrypt('abc123def'),
+            'password' => bcrypt('abc123def'),
         ]);
 
         // Create 5 additional random users

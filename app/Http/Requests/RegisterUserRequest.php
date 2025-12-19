@@ -24,7 +24,7 @@ class RegisterUserRequest extends FormRequest
         return [
             'acceptTerms'   => 'required|accepted',
             'User_Email'    => 'required|email|unique:users,User_Email',
-            'User_Password' => 'required|min:6|confirmed',
+            'password' => 'required|min:6|confirmed',
             'name'     => 'required|string|max:255',
             'role'     => 'nullable|in:ROLE_ADMIN,ROLE_USER',
         ];
@@ -40,9 +40,9 @@ class RegisterUserRequest extends FormRequest
             'User_Email.required'  => 'The email field is required.',
             'User_Email.email'     => 'The email must be a valid email address.',
             'User_Email.unique'    => 'This email is already registered.',
-            'User_Password.required' => 'The password field is required.',
-            'User_Password.min'      => 'The password must be at least 6 characters.',
-            'User_Password.confirmed' => 'The password confirmation does not match.',
+            'password.required' => 'The password field is required.',
+            'password.min'      => 'The password must be at least 6 characters.',
+            'password.confirmed' => 'The password confirmation does not match.',
             'name.required'   => 'The name field is required.',
             'name.max'        => 'The name may not be greater than 255 characters.',
             'role.in'         => 'The selected role is invalid.',

@@ -36,7 +36,7 @@ class CreateUserTest extends RegisterUserTest
 
         $data = [
             'User_Email' => 'test@example.com',
-            'User_Password' => $password,
+            'password' => $password,
             'name' => 'John Doe',
         ];
 
@@ -53,7 +53,7 @@ class CreateUserTest extends RegisterUserTest
         // Assert it looks like a bcrypt hash
         $this->assertMatchesRegularExpression(
             '/^\$2y\$\d{2}\$[\.\/A-Za-z0-9]{53}$/',
-            $user->User_Password
+            $user->password
         );
     }
 
@@ -70,8 +70,8 @@ class CreateUserTest extends RegisterUserTest
         $data = [
             'name' => 'John Doe',
             'User_Email' => 'invalid-email',
-            'User_Password' => $password,
-            // Invalid User_Email and Too Short User_Password
+            'password' => $password,
+            // Invalid User_Email and Too Short password
         ];
 
         $this->creator->execute($data);

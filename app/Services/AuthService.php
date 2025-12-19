@@ -124,7 +124,7 @@ class AuthService
             $validated,
             function (User $user, string $password) {
                 $user->forceFill([
-                    'User_Password' => $this->hasher->make($password)
+                    'password' => $this->hasher->make($password)
                 ])->save();
             }
         );

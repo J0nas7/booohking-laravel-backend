@@ -62,8 +62,8 @@ class UserControllerTest extends TestCase
             'name' => 'New User',
             'email' => 'newuser@example.com',
             'User_Email' => 'newuser@example.com',
-            'User_Password' => 'secret123',
-            'User_Password_confirmation' => 'secret123',
+            'password' => 'secret123',
+            'password_confirmation' => 'secret123',
             'role' => 'ROLE_USER',
         ];
 
@@ -78,7 +78,7 @@ class UserControllerTest extends TestCase
         ]);
 
         $created = User::where('User_Email', 'newuser@example.com')->first();
-        $this->assertTrue(Hash::check('secret123', $created->User_Password));
+        $this->assertTrue(Hash::check('secret123', $created->password));
     }
 
     #[Test]
@@ -91,8 +91,8 @@ class UserControllerTest extends TestCase
         $payload = [
             'name' => 'User',
             'User_Email' => 'duplicate@example.com',
-            'User_Password' => 'password',
-            'User_Password_confirmation' => 'password',
+            'password' => 'password',
+            'password_confirmation' => 'password',
         ];
 
         $response = $this->withHeaders($this->authHeaders($this->admin))
@@ -135,8 +135,8 @@ class UserControllerTest extends TestCase
         $payload = [
             'name' => 'Updated Name',
             'User_Email' => 'updated@example.com',
-            'User_Password' => 'newpass123',
-            'User_Password_confirmation' => 'newpass123',
+            'password' => 'newpass123',
+            'password_confirmation' => 'newpass123',
             'role' => 'ROLE_ADMIN',
         ];
 

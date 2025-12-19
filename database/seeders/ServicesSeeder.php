@@ -18,7 +18,7 @@ class ServicesSeeder extends Seeder
             ],
             [
                 'name' => 'Admin',
-                'User_Password' => bcrypt('password'),
+                'password' => bcrypt('password'),
             ]
         );
 
