@@ -26,7 +26,7 @@ class UsersTableMigrationTest extends TestCase
         // Assert expected columns exist
         $expectedColumns = [
             'User_ID',
-            'User_Name',
+            'name',
             'User_Email',
             'User_Password',
             'email_verification_token',
@@ -47,7 +47,7 @@ class UsersTableMigrationTest extends TestCase
         $userId = $columns->where('name', 'User_ID')->first();
         $this->assertEquals('integer', strtolower($userId->type));
 
-        $userName = $columns->where('name', 'User_Name')->first();
+        $userName = $columns->where('name', 'name')->first();
         $this->assertEquals('varchar', strtolower($userName->type));
 
         $userEmail = $columns->where('name', 'User_Email')->first();

@@ -15,7 +15,7 @@ class CreateUser
     public function execute(array $data): User
     {
         $userData = [
-            'User_Name' => $data['User_Name'] ?? null,
+            'name' => $data['name'] ?? null,
             'email' => $data['User_Email'] ?? null,
             'User_Email' => $data['User_Email'] ?? null,
             'User_Password' => $data['User_Password'] ?? null,

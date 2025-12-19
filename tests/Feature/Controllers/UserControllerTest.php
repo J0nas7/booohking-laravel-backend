@@ -50,7 +50,7 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                '*' => ['User_ID', 'User_Name', 'User_Email']
+                '*' => ['User_ID', 'name', 'User_Email']
             ]);
     }
 
@@ -59,7 +59,7 @@ class UserControllerTest extends TestCase
     public function can_create_user()
     {
         $payload = [
-            'User_Name' => 'New User',
+            'name' => 'New User',
             'email' => 'newuser@example.com',
             'User_Email' => 'newuser@example.com',
             'User_Password' => 'secret123',
@@ -89,7 +89,7 @@ class UserControllerTest extends TestCase
         ]);
 
         $payload = [
-            'User_Name' => 'User',
+            'name' => 'User',
             'User_Email' => 'duplicate@example.com',
             'User_Password' => 'password',
             'User_Password_confirmation' => 'password',
@@ -133,7 +133,7 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
 
         $payload = [
-            'User_Name' => 'Updated Name',
+            'name' => 'Updated Name',
             'User_Email' => 'updated@example.com',
             'User_Password' => 'newpass123',
             'User_Password_confirmation' => 'newpass123',

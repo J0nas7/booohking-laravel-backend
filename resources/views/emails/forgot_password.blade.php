@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <h1>Hello {{ $user->User_Name }},</h1>
+    <h1>Hello {{ $user->name }},</h1>
 
     <p>You requested a password reset. Use the following token to reset your password:</p>
 

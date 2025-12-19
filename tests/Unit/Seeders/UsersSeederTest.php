@@ -23,13 +23,13 @@ class UsersSeederTest extends TestCase
 
         // Assert admin role user exists
         $this->assertDatabaseHas('users', [
-            'User_Name' => 'Jonas Admin',
+            'name' => 'Jonas Admin',
             'User_Email' => 'jonas-adm@booohking.com',
         ]);
 
         // Assert user role user exists
         $this->assertDatabaseHas('users', [
-            'User_Name' => 'Jonas User',
+            'name' => 'Jonas User',
             'User_Email' => 'jonas-usr@booohking.com',
         ]);
 

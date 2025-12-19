@@ -1,5 +1,5 @@
 <x-mail::message>
-    # Welcome, {{ $user->User_Name }}!
+    # Welcome, {{ $user->name }}!
 
     Thanks for registering! Please verify your email by entering this token on the activation page.
 

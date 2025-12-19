@@ -17,7 +17,7 @@ class ServicesSeeder extends Seeder
                 'User_Email' => 'jonas-adm@booohking.com'
             ],
             [
-                'User_Name' => 'Admin',
+                'name' => 'Admin',
                 'User_Password' => bcrypt('password'),
             ]
         );

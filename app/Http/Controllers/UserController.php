@@ -21,7 +21,7 @@ class UserController extends BaseController
     protected function rules(): array
     {
         return [
-            'User_Name'    => 'required|string|max:255',
+            'name'    => 'required|string|max:255',
             'email'   => 'email|unique:users,email',
             'User_Email'   => 'required|email|unique:users,User_Email',
             'User_Password' => 'min:6|confirmed', // expects User_Password_confirmation

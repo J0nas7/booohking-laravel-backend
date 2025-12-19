@@ -21,7 +21,7 @@ class AuthControllerTest extends TestCase
     {
         $data = [
             'acceptTerms' => true,
-            'User_Name' => 'John Doe',
+            'name' => 'John Doe',
             'User_Email' => 'john@example.com',
             'User_Password' => 'password123',
             'User_Password_confirmation' => 'password123'
@@ -46,7 +46,7 @@ class AuthControllerTest extends TestCase
         $user = User::factory()->create(['User_Email' => 'john@example.com']);
 
         $data = [
-            'User_Name' => 'John Doe',
+            'name' => 'John Doe',
             'User_Email' => 'john@example.com',
             'User_Password' => 'password123',
         ];

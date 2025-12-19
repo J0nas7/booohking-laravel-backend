@@ -22,7 +22,7 @@ class AuthTest extends TestCase
             'User_Email' => 'test@example.com',
             'User_Password' => 'password123',
             'User_Password_confirmation' => 'password123',
-            'User_Name' => 'Jonas from Booohking',
+            'name' => 'Jonas from Booohking',
         ];
 
         $response = $this->postJson('/api/auth/register', $data);

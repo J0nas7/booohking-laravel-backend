@@ -16,7 +16,7 @@ return new class extends Migration
             $prefix = 'User_';
 
             $table->bigIncrements($prefix . 'ID');
-            $table->string($prefix . 'Name', 255);
+            $table->string('name', 255);
             $table->string($prefix . 'Email', 255)->unique();
             $table->string('email', 255)->unique();
             $table->string($prefix . 'Password', 255);

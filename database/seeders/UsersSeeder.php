@@ -11,7 +11,7 @@ class UsersSeeder extends Seeder
     {
         // Create one admin
         User::factory()->admin()->create([
-            'User_Name' => 'Jonas Admin',
+            'name' => 'Jonas Admin',
             'email' => 'jonas-adm@booohking.com',
             'User_Email' => 'jonas-adm@booohking.com',
             'User_Password' => bcrypt('abc123def'), // optional override
@@ -19,7 +19,7 @@ class UsersSeeder extends Seeder
 
         // Create one regular user
         User::factory()->create([
-            'User_Name' => 'Jonas User',
+            'name' => 'Jonas User',
             'email' => 'jonas-usr@booohking.com',
             'User_Email' => 'jonas-usr@booohking.com',
             'User_Password' => bcrypt('abc123def'),
