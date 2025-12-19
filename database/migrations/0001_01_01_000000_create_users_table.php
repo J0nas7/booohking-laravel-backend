@@ -20,9 +20,8 @@ return new class extends Migration
             $table->string($prefix . 'Email', 255)->unique();
             $table->string('email', 255)->unique();
             $table->string($prefix . 'Password', 255);
-            $table->string($prefix . 'Remember_Token', 100)->nullable();
             $table->string($prefix . 'Email_Verification_Token')->nullable();
-            $table->dateTime($prefix . 'Email_VerifiedAt', 255)->nullable();
+            $table->dateTime('email_verified_at', 255)->nullable();
 
             $table->enum($prefix . 'Role', ['ROLE_ADMIN', 'ROLE_USER'])->default('ROLE_USER');
 

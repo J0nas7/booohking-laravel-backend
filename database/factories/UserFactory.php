@@ -19,7 +19,7 @@ class UserFactory extends Factory
             'email'                 => $this->faker->unique()->safeEmail,
             'User_Email'            => $this->faker->unique()->safeEmail,
             'User_Password'         => bcrypt('password'), // default password
-            'User_Email_VerifiedAt' => now(),
+            'email_verified_at'     => now(),
             'User_CreatedAt'        => now(),
             'User_UpdatedAt'        => now(),
             'User_DeletedAt'        => null,
@@ -43,7 +43,7 @@ class UserFactory extends Factory
     public function unverified(): static
     {
         return $this->state(fn() => [
-            'User_Email_VerifiedAt' => null,
+            'email_verified_at' => null,
         ]);
     }
 }

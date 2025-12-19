@@ -51,7 +51,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [
             'User_Email_Verification_Token' => 'string',
-            'User_Email_VerifiedAt' => 'datetime',
+            'email_verified_at' => 'datetime',
             'User_Password' => 'hashed',
         ];
     }

@@ -25,7 +25,7 @@ class AuthenticateUserTest extends AuthServiceTest
         $user = User::factory()->create([
             'User_Email' => 'test@example.com',
             'User_Password' => 'hashed-password',
-            'User_Email_VerifiedAt' => now(), // IMPORTANT
+            'email_verified_at' => now(),
         ]);
 
         $credentials = [

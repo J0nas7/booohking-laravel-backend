@@ -59,7 +59,7 @@ class AuthService
         }
 
         // Update user email verification details
-        $user->User_Email_VerifiedAt = now();
+        $user->email_verified_at = now();
         $user->User_Email_Verification_Token = null;
         $user->save();
 
@@ -87,7 +87,7 @@ class AuthService
         $user = Auth::guard('api')->user();
 
         // Check if email is verified
-        if (!$user->User_Email_VerifiedAt) {
+        if (!$user->email_verified_at) {
             return new ServiceResponse(
                 error: 'Please verify your email before logging in.',
                 status: 401

@@ -36,7 +36,7 @@ class ActivateAccountTest extends AuthServiceTest
         // ---- Assert ----
         $user->refresh(); // Refresh the user to get updated fields
         $this->assertNull($user->User_Email_Verification_Token, 'Token should be cleared after activation');
-        $this->assertNotNull($user->User_Email_VerifiedAt, 'Email should be verified after activation');
+        $this->assertNotNull($user->email_verified_at, 'Email should be verified after activation');
         $this->assertEquals('Email verified successfully', $result->message);
         $this->assertEquals('', $result->error); // No error
     }
@@ -64,7 +64,7 @@ class ActivateAccountTest extends AuthServiceTest
 
         // The token should not be cleared and email should not be verified
         $this->assertEquals('valid-token', $user->User_Email_Verification_Token);
-        $this->assertNull($user->User_Email_VerifiedAt);
+        $this->assertNull($user->email_verified_at);
     }
 
     #[Test]
@@ -74,7 +74,7 @@ class ActivateAccountTest extends AuthServiceTest
         $user = User::factory()->create([
             'User_Email' => 'test@example.com',
             'User_Email_Verification_Token' => 'valid-token',
-            'User_Email_VerifiedAt' => now(), // Already verified
+            'email_verified_at' => now(), // Already verified
         ]);
 
         $validated = [
@@ -90,7 +90,7 @@ class ActivateAccountTest extends AuthServiceTest
         $user->refresh();
 
         // Round both timestamps to the nearest second for comparison
-        $this->assertTrue($user->User_Email_VerifiedAt->isSameDay(now()), 'The verification date should remain the same');
+        $this->assertTrue($user->email_verified_at->isSameDay(now()), 'The verification date should remain the same');
     }
 
     #[Test]
