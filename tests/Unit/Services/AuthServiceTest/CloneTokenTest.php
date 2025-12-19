@@ -25,7 +25,7 @@ class CloneTokenTest extends AuthServiceTest
         // ---- Arrange ----
         // Create a user in the database
         $user = User::factory()->create([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
         ]);
 
         // Act as the user (authenticate)

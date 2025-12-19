@@ -16,8 +16,7 @@ class UserFactory extends Factory
     {
         return [
             'name'             => $this->faker->firstName,
-            'email'                 => $this->faker->unique()->safeEmail,
-            'User_Email'            => $this->faker->unique()->safeEmail,
+            'email'            => $this->faker->unique()->safeEmail,
             'password'         => bcrypt('password'), // default password
             'email_verified_at'     => now(),
             'User_CreatedAt'        => now(),

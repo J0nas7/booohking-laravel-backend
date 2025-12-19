@@ -29,7 +29,7 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name',
         'email',
-        'User_Email',
+        'email',
         'password',
     ];
 
@@ -66,16 +66,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->role === 'ROLE_ADMIN';
     }
 
-    public function getEmailForPasswordReset()
-    {
-        return $this->User_Email;
-    }
-
-    public function getEmailAttribute()
-    {
-        return $this->User_Email;
-    }
-
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ForgotPasswordNotification($token));
@@ -83,7 +73,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function routeNotificationForMail($notification = null)
     {
-        return $this->User_Email;
+        return $this->email;
     }
 
     public function  getDeletedAtColumn()

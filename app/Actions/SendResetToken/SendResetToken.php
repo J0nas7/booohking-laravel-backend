@@ -13,12 +13,12 @@ class SendResetToken
     {
         try {
             $response = Password::sendResetLink([
-                'User_Email' => $validated['User_Email'],
+                'email' => $validated['email'],
             ]);
         } catch (TransportExceptionInterface $e) {
             // Log full details for devs
             Log::error('Password reset email failed', [
-                'email' => $validated['User_Email'],
+                'email' => $validated['email'],
                 'exception' => $e->getMessage(),
             ]);
 

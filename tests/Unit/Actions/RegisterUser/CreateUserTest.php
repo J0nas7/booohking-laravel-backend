@@ -35,7 +35,7 @@ class CreateUserTest extends RegisterUserTest
             ->andReturn('hashed-password');
 
         $data = [
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => $password,
             'name' => 'John Doe',
         ];
@@ -43,7 +43,7 @@ class CreateUserTest extends RegisterUserTest
         $user = $this->creator->execute($data);
 
         $this->assertDatabaseHas('users', [
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'role' => 'ROLE_USER'
         ]);
 
@@ -69,9 +69,9 @@ class CreateUserTest extends RegisterUserTest
 
         $data = [
             'name' => 'John Doe',
-            'User_Email' => 'invalid-email',
+            'email' => 'invalid-email',
             'password' => $password,
-            // Invalid User_Email and Too Short password
+            // Invalid email and Too Short password
         ];
 
         $this->creator->execute($data);

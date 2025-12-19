@@ -14,7 +14,6 @@ class ServicesSeeder extends Seeder
         $user = User::firstOrCreate(
             [
                 'email' => 'jonas-adm@booohking.com',
-                'User_Email' => 'jonas-adm@booohking.com'
             ],
             [
                 'name' => 'Admin',

@@ -23,7 +23,7 @@ class RegisterUserRequest extends FormRequest
     {
         return [
             'acceptTerms'   => 'required|accepted',
-            'User_Email'    => 'required|email|unique:users,User_Email',
+            'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
             'name'     => 'required|string|max:255',
             'role'     => 'nullable|in:ROLE_ADMIN,ROLE_USER',
@@ -37,9 +37,9 @@ class RegisterUserRequest extends FormRequest
     {
         return [
             'acceptTerms.required' => 'You must accept the terms and conditions.',
-            'User_Email.required'  => 'The email field is required.',
-            'User_Email.email'     => 'The email must be a valid email address.',
-            'User_Email.unique'    => 'This email is already registered.',
+            'email.required'  => 'The email field is required.',
+            'email.email'     => 'The email must be a valid email address.',
+            'email.unique'    => 'This email is already registered.',
             'password.required' => 'The password field is required.',
             'password.min'      => 'The password must be at least 6 characters.',
             'password.confirmed' => 'The password confirmation does not match.',

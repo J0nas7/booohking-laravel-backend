@@ -24,7 +24,7 @@ class ForgotPasswordMail extends Mailable
     {
         $this->user = $user;
         $this->token = $token;
-        $this->to($user->User_Email);
+        $this->to($user->email);
     }
 
     /**

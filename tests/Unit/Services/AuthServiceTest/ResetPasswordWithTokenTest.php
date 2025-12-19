@@ -36,11 +36,10 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
 
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'User_Email' => 'test@example.com',
         ]);
 
         // Send reset link (this generates a token and "sends" email)
-        Password::sendResetLink(['email' => $user->User_Email]);
+        Password::sendResetLink(['email' => $user->email]);
 
         // Assert notification was "sent"
         Notification::assertSentTo(
@@ -55,7 +54,7 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
         $newPassword = 'newpassword123';
 
         $data = [
-            'email' => $user->User_Email,
+            'email' => $user->email,
             'token' => $token,
             'password' => $newPassword,
             'password_confirmation' => $newPassword,
@@ -78,11 +77,10 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'User_Email' => 'test@example.com',
         ]);
 
         $data = [
-            'email' => $user->User_Email,
+            'email' => $user->email,
             'token' => 'invalid-token',
             'password' => 'newpassword123',
             'password_confirmation' => 'newpassword123',

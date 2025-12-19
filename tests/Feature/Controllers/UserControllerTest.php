@@ -22,13 +22,13 @@ class UserControllerTest extends TestCase
 
         // Make admin
         $this->admin = User::factory()->create([
-            'User_Email' => 'admin@example.com',
+            'email' => 'admin@example.com',
             'role' => 'ROLE_ADMIN'
         ]);
 
         // Make normal user
         $this->user = User::factory()->create([
-            'User_Email' => 'user@example.com',
+            'email' => 'user@example.com',
             'role' => 'ROLE_USER'
         ]);
     }
@@ -50,7 +50,7 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                '*' => ['User_ID', 'name', 'User_Email']
+                '*' => ['User_ID', 'name', 'email']
             ]);
     }
 
@@ -61,7 +61,7 @@ class UserControllerTest extends TestCase
         $payload = [
             'name' => 'New User',
             'email' => 'newuser@example.com',
-            'User_Email' => 'newuser@example.com',
+            'email' => 'newuser@example.com',
             'password' => 'secret123',
             'password_confirmation' => 'secret123',
             'role' => 'ROLE_USER',
@@ -71,13 +71,13 @@ class UserControllerTest extends TestCase
             ->postJson('/api/users', $payload);
 
         $response->assertStatus(201)
-            ->assertJsonFragment(['User_Email' => 'newuser@example.com']);
+            ->assertJsonFragment(['email' => 'newuser@example.com']);
 
         $this->assertDatabaseHas('users', [
-            'User_Email' => 'newuser@example.com',
+            'email' => 'newuser@example.com',
         ]);
 
-        $created = User::where('User_Email', 'newuser@example.com')->first();
+        $created = User::where('email', 'newuser@example.com')->first();
         $this->assertTrue(Hash::check('secret123', $created->password));
     }
 
@@ -85,12 +85,12 @@ class UserControllerTest extends TestCase
     public function email_must_be_unique()
     {
         User::factory()->create([
-            'User_Email' => 'duplicate@example.com'
+            'email' => 'duplicate@example.com'
         ]);
 
         $payload = [
             'name' => 'User',
-            'User_Email' => 'duplicate@example.com',
+            'email' => 'duplicate@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ];
@@ -99,7 +99,7 @@ class UserControllerTest extends TestCase
             ->postJson('/api/users', $payload);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['User_Email']);
+            ->assertJsonValidationErrors(['email']);
     }
 
     // ==== show() ====
@@ -134,7 +134,7 @@ class UserControllerTest extends TestCase
 
         $payload = [
             'name' => 'Updated Name',
-            'User_Email' => 'updated@example.com',
+            'email' => 'updated@example.com',
             'password' => 'newpass123',
             'password_confirmation' => 'newpass123',
             'role' => 'ROLE_ADMIN',
@@ -144,11 +144,11 @@ class UserControllerTest extends TestCase
             ->putJson("/api/users/{$user->User_ID}", $payload);
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['User_Email' => 'updated@example.com']);
+            ->assertJsonFragment(['email' => 'updated@example.com']);
 
         $this->assertDatabaseHas('users', [
             'User_ID' => $user->User_ID,
-            'User_Email' => 'updated@example.com',
+            'email' => 'updated@example.com',
         ]);
     }
 

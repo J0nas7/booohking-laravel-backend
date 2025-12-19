@@ -18,11 +18,11 @@ class ActivateAccountTest extends AuthServiceTest
     }
 
     #[Test]
-    public function it_activates_the_user_email_successfully()
+    public function it_activates_the_email_successfully()
     {
         // ---- Arrange ----
         $user = User::factory()->unverified()->create([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'email_verification_token' => 'valid-token',
         ]);
 
@@ -46,7 +46,7 @@ class ActivateAccountTest extends AuthServiceTest
     {
         // ---- Arrange ----
         $user = User::factory()->unverified()->create([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'email_verification_token' => 'valid-token',
         ]);
 
@@ -72,7 +72,7 @@ class ActivateAccountTest extends AuthServiceTest
     {
         // ---- Arrange ----
         $user = User::factory()->create([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'email_verification_token' => 'valid-token',
             'email_verified_at' => now(), // Already verified
         ]);

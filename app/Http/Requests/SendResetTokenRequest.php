@@ -25,7 +25,7 @@ class SendResetTokenRequest extends FormRequest
     public function rules()
     {
         return [
-            'User_Email' => 'required|email|exists:users,User_Email',
+            'email' => 'required|email|exists:users,email',
         ];
     }
 
@@ -37,9 +37,9 @@ class SendResetTokenRequest extends FormRequest
     public function messages()
     {
         return [
-            'User_Email.required' => 'The email address is required.',
-            'User_Email.email' => 'Please provide a valid email address.',
-            'User_Email.exists' => 'Credentials does not exist.',
+            'email.required' => 'The email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.exists' => 'Credentials does not exist.',
         ];
     }
 }

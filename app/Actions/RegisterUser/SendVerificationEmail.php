@@ -16,7 +16,7 @@ class SendVerificationEmail
         $token = $user->email_verification_token;
 
         try {
-            $this->mail->to($user->User_Email)
+            $this->mail->to($user->email)
                 ->send(new WelcomeEmail($user, $token));
 
             return [

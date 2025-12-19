@@ -29,6 +29,6 @@ class GetAuthenticatedUserTest extends AuthServiceTest
 
         $result = $this->authService->getAuthenticatedUser();
 
-        $this->assertEquals($user->User_Email, $result->data['user']->User_Email);
+        $this->assertEquals($user->email, $result->data['user']->email);
     }
 }

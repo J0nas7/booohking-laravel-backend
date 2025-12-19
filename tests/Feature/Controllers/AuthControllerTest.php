@@ -22,7 +22,7 @@ class AuthControllerTest extends TestCase
         $data = [
             'acceptTerms' => true,
             'name' => 'John Doe',
-            'User_Email' => 'john@example.com',
+            'email' => 'john@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123'
         ];
@@ -36,18 +36,18 @@ class AuthControllerTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('users', [
-            'User_Email' => 'john@example.com'
+            'email' => 'john@example.com'
         ]);
     }
 
     #[Test]
     public function cannot_register_with_existing_email()
     {
-        $user = User::factory()->create(['User_Email' => 'john@example.com']);
+        $user = User::factory()->create(['email' => 'john@example.com']);
 
         $data = [
             'name' => 'John Doe',
-            'User_Email' => 'john@example.com',
+            'email' => 'john@example.com',
             'password' => 'password123',
         ];
 
@@ -66,7 +66,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'User_Email' => $user->User_Email,
+            'email' => $user->email,
             'password' => 'password123'
         ]);
 
@@ -82,7 +82,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'User_Email' => $user->User_Email,
+            'email' => $user->email,
             'password' => 'wrongpassword'
         ]);
 
@@ -100,14 +100,14 @@ class AuthControllerTest extends TestCase
         // 5 allowed attempts
         for ($i = 0; $i < 5; $i++) {
             $this->postJson('/api/auth/login', [
-                'User_Email' => $user->User_Email,
+                'email' => $user->email,
                 'password' => 'wrongpassword',
             ])->assertStatus(401);
         }
 
         // 6th attempt should be throttled
         $response = $this->postJson('/api/auth/login', [
-            'User_Email' => $user->User_Email,
+            'email' => $user->email,
             'password' => 'wrongpassword',
         ]);
 
@@ -230,12 +230,12 @@ class AuthControllerTest extends TestCase
     {
         for ($i = 0; $i < 3; $i++) {
             $this->postJson('/api/auth/forgot-password', [
-                'User_Email' => 'nonexistent@example.com',
+                'email' => 'nonexistent@example.com',
             ]);
         }
 
         $response = $this->postJson('/api/auth/forgot-password', [
-            'User_Email' => 'nonexistent@example.com',
+            'email' => 'nonexistent@example.com',
         ]);
 
         $response->assertStatus(429);
@@ -246,7 +246,7 @@ class AuthControllerTest extends TestCase
     public function user_can_activate_account()
     {
         $user = User::factory()->unverified()->create([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'email_verification_token' => 'valid-token',
         ]);
 
@@ -271,11 +271,10 @@ class AuthControllerTest extends TestCase
         $password = "newpassword123";
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'User_Email' => 'test@example.com'
         ]);
 
         // Send reset link (this generates a token and "sends" email)
-        Password::sendResetLink(['email' => $user->User_Email]);
+        Password::sendResetLink(['email' => $user->email]);
 
         // Assert notification was "sent"
         Notification::assertSentTo(
@@ -288,7 +287,7 @@ class AuthControllerTest extends TestCase
         );
 
         $data = [
-            'email' => $user->User_Email,
+            'email' => $user->email,
             'token' => $token,
             'password' => $password,
             'password_confirmation' => $password,

@@ -36,13 +36,12 @@ class SendResetTokenTest extends TestCase
 
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'User_Email' => 'test@example.com',
         ]);
 
         $service = new SendResetToken();
 
         $result = $service->execute([
-            'User_Email' => $user->User_Email,
+            'email' => $user->email,
         ]);
 
         $this->assertEquals(200, $result->status);
@@ -61,7 +60,7 @@ class SendResetTokenTest extends TestCase
         $service = new SendResetToken();
 
         $result = $service->execute([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
         ]);
 
         $this->assertEquals(
@@ -82,7 +81,7 @@ class SendResetTokenTest extends TestCase
         $service = new SendResetToken();
 
         $result = $service->execute([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
         ]);
 
         $this->assertEquals(429, $result->status);

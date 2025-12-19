@@ -24,17 +24,17 @@ class UsersSeederTest extends TestCase
         // Assert admin role user exists
         $this->assertDatabaseHas('users', [
             'name' => 'Jonas Admin',
-            'User_Email' => 'jonas-adm@booohking.com',
+            'email' => 'jonas-adm@booohking.com',
         ]);
 
         // Assert user role user exists
         $this->assertDatabaseHas('users', [
             'name' => 'Jonas User',
-            'User_Email' => 'jonas-usr@booohking.com',
+            'email' => 'jonas-usr@booohking.com',
         ]);
 
         // Assert there are users created by factory (not the manual ones)
-        $factoryUsersCount = User::whereNotIn('User_Email', [
+        $factoryUsersCount = User::whereNotIn('email', [
             'jonas-adm@booohking.com',
             'jonas-usr@booohking.com'
         ])->count();

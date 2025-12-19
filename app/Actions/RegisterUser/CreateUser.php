@@ -16,8 +16,7 @@ class CreateUser
     {
         $userData = [
             'name' => $data['name'] ?? null,
-            'email' => $data['User_Email'] ?? null,
-            'User_Email' => $data['User_Email'] ?? null,
+            'email' => $data['email'] ?? null,
             'password' => $data['password'] ?? null,
         ];
 

@@ -19,7 +19,7 @@ class AuthTest extends TestCase
     {
         $data = [
             'acceptTerms' => true,
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'name' => 'Jonas from Booohking',
@@ -40,7 +40,7 @@ class AuthTest extends TestCase
     public function test_register_user_invalid_data()
     {
         $data = [
-            'User_Email' => 'invalid-email',
+            'email' => 'invalid-email',
             'password' => 'short',
         ];
 
@@ -59,7 +59,7 @@ class AuthTest extends TestCase
         $user = User::factory()->create(['password' => bcrypt($password)]);
 
         $response = $this->postJson('/api/auth/login', [
-            'User_Email' => $user->User_Email,
+            'email' => $user->email,
             'password' => $password,
         ]);
 
@@ -73,7 +73,7 @@ class AuthTest extends TestCase
     public function test_login_user_invalid_credentials()
     {
         $response = $this->postJson('/api/auth/login', [
-            'User_Email' => 'nonexistent@example.com',
+            'email' => 'nonexistent@example.com',
             'password' => 'wrongpassword',
         ]);
 
@@ -136,10 +136,10 @@ class AuthTest extends TestCase
      */
     public function test_register_user_duplicate_email()
     {
-        User::factory()->create(['User_Email' => 'test@example.com']);
+        User::factory()->create(['email' => 'test@example.com']);
 
         $data = [
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => 'password123',
             'User_Status' => 1,
         ];

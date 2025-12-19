@@ -65,7 +65,6 @@ class UserTest extends TestCase
     {
         $userData = [
             'email'            => 'test@example.com',
-            'User_Email'            => 'test@example.com',
             'name'             => 'Test User',
             'password'         => 'password',
             'password_confirmation' => 'password',
@@ -77,7 +76,7 @@ class UserTest extends TestCase
         $response = $this->postJson('/api/users', $userData);
 
         $response->assertStatus(201)
-            ->assertJsonFragment(['User_Email' => 'test@example.com']);
+            ->assertJsonFragment(['email' => 'test@example.com']);
     }
 
     /**
@@ -86,7 +85,7 @@ class UserTest extends TestCase
     public function test_create_user_with_invalid_data()
     {
         $userData = [
-            'User_Email' => 'invalid_email',
+            'email' => 'invalid_email',
             'password' => 'short',
         ];
 
@@ -102,12 +101,12 @@ class UserTest extends TestCase
     public function test_update_user_success()
     {
         $user = User::factory()->create();
-        $user->User_Email = 'updated@example.com';
+        $user->email = 'updated@example.com';
 
         $response = $this->putJson('/api/users/' . $user->User_ID, $user->toArray());
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['User_Email' => 'updated@example.com']);
+            ->assertJsonFragment(['email' => 'updated@example.com']);
     }
 
     /**
@@ -116,7 +115,7 @@ class UserTest extends TestCase
     public function test_update_nonexistent_user()
     {
         $updateData = [
-            'User_Email' => 'nonexistent@example.com',
+            'email' => 'nonexistent@example.com',
         ];
 
         $response = $this->putJson('/api/users/99999', $updateData);
@@ -154,9 +153,9 @@ class UserTest extends TestCase
      */
     public function test_create_user_duplicate_email()
     {
-        User::factory()->create(['User_Email' => 'test@example.com']);
+        User::factory()->create(['email' => 'test@example.com']);
         $userData = [
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => 'password123',
         ];
 
@@ -173,7 +172,7 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create();
         $updateData = [
-            'User_Email' => 'not-an-email',
+            'email' => 'not-an-email',
         ];
 
         $response = $this->putJson('/api/users/' . $user->User_ID, $updateData);

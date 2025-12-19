@@ -39,7 +39,7 @@ class SendVerificationEmailTest extends RegisterUserTest
         $this->mailMock
             ->shouldReceive('to')
             ->once()
-            ->with($user->User_Email)
+            ->with($user->email)
             ->andReturnSelf();
 
         $this->mailMock

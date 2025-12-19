@@ -17,7 +17,6 @@ return new class extends Migration
 
             $table->bigIncrements($prefix . 'ID');
             $table->string('name', 255);
-            $table->string($prefix . 'Email', 255)->unique();
             $table->string('email', 255)->unique();
             $table->string('password', 255);
             $table->string('email_verification_token')->nullable();

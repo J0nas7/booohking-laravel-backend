@@ -23,13 +23,13 @@ class AuthenticateUserTest extends AuthServiceTest
     {
         // ---- Arrange ----
         $user = User::factory()->create([
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => 'hashed-password',
             'email_verified_at' => now(),
         ]);
 
         $credentials = [
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => 'password123',
         ];
 
@@ -58,7 +58,7 @@ class AuthenticateUserTest extends AuthServiceTest
     public function it_fails_to_authenticate_with_invalid_credentials()
     {
         $credentials = [
-            'User_Email' => 'test@example.com',
+            'email' => 'test@example.com',
             'password' => 'wrong-password',
         ];
 
