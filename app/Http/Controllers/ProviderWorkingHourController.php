@@ -24,7 +24,7 @@ class ProviderWorkingHourController extends BaseController
             'Provider_ID' => 'required|exists:Boo_Providers,Provider_ID',
             'PWH_DayOfWeek' => 'required|integer|min:0|max:6', // 0=Sunday, 6=Saturday
             'PWH_StartTime' => 'required|date_format:H:i',
-            'PWH_EndTime' => 'required|date_format:H:i|after:StartTime',
+            'PWH_EndTime' => 'required|date_format:H:i|after:PWH_StartTime',
         ];
     }
 
@@ -40,7 +40,7 @@ class ProviderWorkingHourController extends BaseController
     public function index(Request $request): JsonResponse
     {
         // Get pagination parameters from query string, default page 1, 10 items per page
-        $page = (int) $request->query('page', 1);
+        $page = max((int) $request->query('page', 1), 1);
         $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = ($this->modelClass)::with($this->with);

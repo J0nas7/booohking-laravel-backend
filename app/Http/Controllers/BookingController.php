@@ -63,7 +63,7 @@ class BookingController extends BaseController
         $slotDuration = 30; // default, or get from service if needed
 
         // Pagination params
-        $page = (int) $request->query('page', 1);
+        $page = max((int) $request->query('page', 1), 1);
         $perPage = max((int) $request->query('perPage', 20), 1);
 
         $slots = \App\Services\BookingService::generateAvailableSlots($provider, 30, $slotDuration, $serviceId);
@@ -89,7 +89,7 @@ class BookingController extends BaseController
     public function readBookingsByUserID(Request $request, User $user): JsonResponse
     {
         // Pagination
-        $page = (int) $request->query('page', 1);
+        $page = max((int) $request->query('page', 1), 1);
         $perPage = max((int) $request->query('perPage', 10), 1);
 
         // Build query: all bookings for this user
@@ -139,7 +139,7 @@ class BookingController extends BaseController
         $user = $request->user();
 
         // Get pagination parameters from query string, default to page 1, 10 items per page
-        $page = (int) $request->query('page', 1);
+        $page = max((int) $request->query('page', 1), 1);
         $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = ($this->modelClass)::query()->with($this->with);

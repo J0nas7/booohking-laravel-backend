@@ -36,7 +36,7 @@ class ServiceController extends BaseController
     public function readServicesByUserId(Request $request, User $user): JsonResponse
     {
         // Pagination
-        $page = (int) $request->query('page', 1);
+        $page = max((int) $request->query('page', 1), 1);
         $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = Service::with($this->with)
@@ -76,7 +76,7 @@ class ServiceController extends BaseController
     public function index(Request $request): JsonResponse
     {
         // Get pagination parameters from query string, defaults: page=1, perPage=10
-        $page = (int) $request->query('page', 1);
+        $page = max((int) $request->query('page', 1), 1);
         $perPage = max((int) $request->query('perPage', 10), 1);
 
         $query = ($this->modelClass)::query();
@@ -88,7 +88,31 @@ class ServiceController extends BaseController
         // Paginate results
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json($paginated);
+        if ($paginated->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No services found',
+                'data' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'perPage' => $perPage,
+                    'currentPage' => $page,
+                    'lastPage' => 0,
+                ]
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Services found',
+            'data' => $paginated->items(),
+            'pagination' => [
+                'total' => $paginated->total(),
+                'perPage' => $paginated->perPage(),
+                'currentPage' => $paginated->currentPage(),
+                'lastPage' => $paginated->lastPage(),
+            ]
+        ]);
     }
 
     // Only admins should be able to create new services.
