@@ -164,7 +164,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
 
-        $this->assertSoftDeleted('users', [
+        $this->assertDatabaseMissing('users', [
             'id' => $user->id,
         ]);
     }

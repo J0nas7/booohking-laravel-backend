@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Notifications\ForgotPasswordNotification;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -19,7 +18,7 @@ class User extends Authenticatable implements JWTSubject
     protected $primaryKey = "id";
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, CanResetPassword;
+    use HasFactory, Notifiable, CanResetPassword;
 
     /**
      * The attributes that are mass assignable.
@@ -56,11 +55,6 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    protected $dates = ['User_CreatedAt', 'User_UpdatedAt', 'User_DeletedAt',];
-    const CREATED_AT = 'User_CreatedAt';
-    const UPDATED_AT = 'User_UpdatedAt';
-    const DELETED_AT = 'User_DeletedAt';
-
     public function isAdmin(): bool
     {
         return $this->role === 'ROLE_ADMIN';
@@ -74,11 +68,6 @@ class User extends Authenticatable implements JWTSubject
     public function routeNotificationForMail($notification = null)
     {
         return $this->email;
-    }
-
-    public function  getDeletedAtColumn()
-    {
-        return 'User_DeletedAt';
     }
 
     /**

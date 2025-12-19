@@ -32,9 +32,8 @@ class UsersTableMigrationTest extends TestCase
             'email_verification_token',
             'email_verified_at',
             'role',
-            'User_CreatedAt',
-            'User_UpdatedAt',
-            'User_DeletedAt',
+            'created_at',
+            'updated_at',
         ];
 
         foreach ($expectedColumns as $column) {

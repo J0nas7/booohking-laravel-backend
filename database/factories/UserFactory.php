@@ -19,9 +19,8 @@ class UserFactory extends Factory
             'email'            => $this->faker->unique()->safeEmail,
             'password'         => bcrypt('password'), // default password
             'email_verified_at'     => now(),
-            'User_CreatedAt'        => now(),
-            'User_UpdatedAt'        => now(),
-            'User_DeletedAt'        => null,
+            'created_at'        => now(),
+            'updated_at'        => now(),
             'role'             => 'ROLE_USER', // default role
         ];
     }

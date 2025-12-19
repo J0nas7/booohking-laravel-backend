@@ -68,9 +68,8 @@ class UserTest extends TestCase
             'name'             => 'Test User',
             'password'         => 'password',
             'password_confirmation' => 'password',
-            'User_CreatedAt'        => now(),
-            'User_UpdatedAt'        => now(),
-            'User_DeletedAt'        => null, // Optional
+            'created_at'        => now(),
+            'updated_at'        => now(),
         ];
 
         $response = $this->postJson('/api/users', $userData);
@@ -134,7 +133,7 @@ class UserTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Deleted successfully']);
-        $this->assertSoftDeleted($user);
+        $this->assertDatabaseMissing($user);
     }
 
     /**

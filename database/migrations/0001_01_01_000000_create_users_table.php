@@ -13,8 +13,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $prefix = 'User_';
-
             $table->id();
             $table->string('name', 255);
             $table->string('email', 255)->unique();
@@ -24,7 +22,7 @@ return new class extends Migration
 
             $table->enum('role', ['ROLE_ADMIN', 'ROLE_USER'])->default('ROLE_USER');
 
-            MigrationHelper::addDateTimeFields($table, $prefix);
+            $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
