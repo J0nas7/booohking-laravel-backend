@@ -15,48 +15,6 @@ class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    // ==== register() ====
-    #[Test]
-    public function user_can_register_successfully()
-    {
-        $data = [
-            'acceptTerms' => true,
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123'
-        ];
-
-        $response = $this->postJson('/api/auth/register', $data);
-
-        $response->assertStatus(201)
-            ->assertJson([
-                'success' => true,
-                'message' => 'User registered successfully'
-            ]);
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'john@example.com'
-        ]);
-    }
-
-    #[Test]
-    public function cannot_register_with_existing_email()
-    {
-        $user = User::factory()->create(['email' => 'john@example.com']);
-
-        $data = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'password123',
-        ];
-
-        $response = $this->postJson('/api/auth/register', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonStructure(['errors']);
-    }
-
     // ==== login() ====
     #[Test]
     public function user_can_login_successfully()

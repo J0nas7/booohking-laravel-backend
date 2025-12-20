@@ -23,7 +23,6 @@ class ResetPasswordWithTokenTest extends AuthServiceTest
         $this->authService = new AuthService(
             app()->make(\Illuminate\Contracts\Mail\Mailer::class),
             app()->make(\Illuminate\Contracts\Hashing\Hasher::class),
-            $this->registerUser,
             $this->sendResetToken
         );
     }

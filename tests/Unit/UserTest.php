@@ -14,6 +14,21 @@ class UserTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create(['role' => 'ROLE_USER']);
+    }
+
+    protected function authHeaders(User $user): array
+    {
+        $token = JWTAuth::fromUser($user);
+        return ['Authorization' => "Bearer $token"];
+    }
+
     /**
      * Test fetching all users.
      */
@@ -23,7 +38,7 @@ class UserTest extends TestCase
         $response = $this->getJson('/api/users');
 
         $response->assertStatus(200)
-            ->assertJsonCount(5);
+            ->assertJsonCount(6, 'data');
     }
 
     /**
@@ -64,6 +79,7 @@ class UserTest extends TestCase
     public function test_create_user_success()
     {
         $userData = [
+            'acceptTerms'      => true,
             'email'            => 'test@example.com',
             'name'             => 'Test User',
             'password'         => 'password',
@@ -95,6 +111,27 @@ class UserTest extends TestCase
     }
 
     /**
+     * Edge Case: Register user with duplicate email.
+     */
+    public function test_register_user_duplicate_email()
+    {
+        User::factory()->create(['email' => 'test@example.com']);
+
+        $userData = [
+            'acceptTerms'      => true,
+            'email'            => 'test@example.com',
+            'name'             => 'Test User',
+            'password'         => 'password',
+            'password_confirmation' => 'password',
+        ];
+
+        $response = $this->postJson('/api/users', $userData);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['errors']);
+    }
+
+    /**
      * Test updating an existing user.
      */
     public function test_update_user_success()
@@ -102,7 +139,8 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         $user->email = 'updated@example.com';
 
-        $response = $this->putJson('/api/users/' . $user->id, $user->toArray());
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->putJson('/api/users/' . $user->id, $user->toArray());
 
         $response->assertStatus(200)
             ->assertJsonFragment(['email' => 'updated@example.com']);
@@ -114,10 +152,12 @@ class UserTest extends TestCase
     public function test_update_nonexistent_user()
     {
         $updateData = [
+            'name' => 'Non existent',
             'email' => 'nonexistent@example.com',
         ];
 
-        $response = $this->putJson('/api/users/99999', $updateData);
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->putJson('/api/users/99999', $updateData);
 
         $response->assertStatus(404)
             ->assertJson(['message' => 'No query results for model [App\\Models\\User] 99999']);
@@ -128,12 +168,12 @@ class UserTest extends TestCase
      */
     public function test_delete_user_success()
     {
-        $user = User::factory()->create();
-        $response = $this->deleteJson('/api/users/' . $user->id);
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->deleteJson('/api/users/' . $this->user->id);
 
         $response->assertStatus(200)
-            ->assertJson(['message' => 'Deleted successfully']);
-        $this->assertDatabaseMissing($user);
+            ->assertJson(['message' => 'User deleted']);
+        $this->assertDatabaseMissing($this->user);
     }
 
     /**
@@ -141,7 +181,8 @@ class UserTest extends TestCase
      */
     public function test_delete_nonexistent_user()
     {
-        $response = $this->deleteJson('/api/users/99999');
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->deleteJson('/api/users/99999');
 
         $response->assertStatus(404)
             ->assertJson(['message' => 'No query results for model [App\\Models\\User] 99999']);
@@ -169,12 +210,12 @@ class UserTest extends TestCase
      */
     public function test_update_user_invalid_email()
     {
-        $user = User::factory()->create();
         $updateData = [
             'email' => 'not-an-email',
         ];
 
-        $response = $this->putJson('/api/users/' . $user->id, $updateData);
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->putJson('/api/users/' . $this->user->id, $updateData);
 
         $response->assertStatus(422)
             ->assertJsonStructure(['errors']);
@@ -188,9 +229,10 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         $user->delete();
 
-        $response = $this->deleteJson('/api/users/' . $user->id);
+        $response = $this->withHeaders($this->authHeaders($this->user))
+            ->deleteJson('/api/users/' . $user->id);
 
         $response->assertStatus(404)
-            ->assertJson(['message' => 'No query results for model [App\\Models\\User] 1']);
+            ->assertJson(['message' => 'No query results for model [App\\Models\\User] 2']);
     }
 }

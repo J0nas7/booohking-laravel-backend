@@ -50,7 +50,9 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                '*' => ['id', 'name', 'email']
+                'data' => [
+                    '*' => ['id', 'name', 'email']
+                ]
             ]);
     }
 
@@ -59,6 +61,7 @@ class UserControllerTest extends TestCase
     public function can_create_user()
     {
         $payload = [
+            'acceptTerms' => true,
             'name' => 'New User',
             'email' => 'newuser@example.com',
             'email' => 'newuser@example.com',
@@ -100,6 +103,9 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['errors']);
     }
 
     // ==== show() ====
@@ -162,7 +168,7 @@ class UserControllerTest extends TestCase
             ->deleteJson("/api/users/{$user->id}");
 
         $response->assertStatus(200)
-            ->assertJson(['message' => 'Deleted successfully']);
+            ->assertJson(['message' => 'User deleted']);
 
         $this->assertDatabaseMissing('users', [
             'id' => $user->id,

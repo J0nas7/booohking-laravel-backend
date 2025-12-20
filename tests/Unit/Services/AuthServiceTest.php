@@ -5,7 +5,6 @@ namespace Tests\Unit\Services;
 use App\Services\AuthService;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Hashing\Hasher;
-use App\Actions\RegisterUser\RegisterUser;
 use App\Actions\SendResetToken\SendResetToken;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Mockery;
@@ -18,7 +17,6 @@ class AuthServiceTest extends TestCase
     protected AuthService $authService;
     protected Mailer&MockInterface $mailer;
     protected Hasher&MockInterface $hasher;
-    protected RegisterUser&MockInterface $registerUser;
     protected SendResetToken&MockInterface $sendResetToken;
     protected Guard&MockInterface $guard;
     protected JWTAuth&MockInterface $jwtAuthFacade;
@@ -32,14 +30,12 @@ class AuthServiceTest extends TestCase
         // Mocking common dependencies for AuthService
         $this->mailer = Mockery::mock(Mailer::class);
         $this->hasher = Mockery::mock(Hasher::class);
-        $this->registerUser = Mockery::mock(RegisterUser::class);
         $this->sendResetToken = Mockery::mock(SendResetToken::class);
 
         // Initialize AuthService with mocked dependencies
         $this->authService = new AuthService(
             $this->mailer,
             $this->hasher,
-            $this->registerUser,
             $this->sendResetToken,
         );
     }

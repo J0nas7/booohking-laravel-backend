@@ -6,18 +6,13 @@ use App\Helpers\ApiResponse;
 use App\Http\Requests\{
     RegisterUserRequest
 };
-use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Routing\Controller;
 
-class UserController extends BaseController
+class UserController extends Controller
 {
-    protected string $modelClass = User::class;
-
-    protected array $with = [];
-
     protected $userService;
 
     /**
@@ -56,7 +51,7 @@ class UserController extends BaseController
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         $result = $this->userService->indexUsers();
         return ApiResponse::fromServiceResult($result);
@@ -64,14 +59,12 @@ class UserController extends BaseController
 
     // Store a new user.
     /**
-     * @param Request $request
+     * @param $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(RegisterUserRequest $request): JsonResponse
     {
-        /** @var RegisterUserRequest $request */
-        $validated = $request->validated();
-        $result = $this->userService->storeUser($validated);
+        $result = $this->userService->storeUser($request->validated());
         $this->afterStore($result->data['user']);
         return ApiResponse::fromServiceResult($result);
     }
@@ -82,7 +75,7 @@ class UserController extends BaseController
      * @param int $id
      * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         $result = $this->userService->showUser($id);
         return ApiResponse::fromServiceResult($result);
@@ -108,7 +101,7 @@ class UserController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         $result = $this->userService->destroyUser($id);
         $this->afterDestroy($result->data['user']);

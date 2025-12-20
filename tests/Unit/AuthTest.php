@@ -13,44 +13,6 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test user registration success.
-     */
-    public function test_register_user_success()
-    {
-        $data = [
-            'acceptTerms' => true,
-            'email' => 'test@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'name' => 'Jonas from Booohking',
-        ];
-
-        $response = $this->postJson('/api/auth/register', $data);
-
-        $response->assertStatus(201)
-            ->assertJsonFragment([
-                'message' => 'User registered successfully',
-                'success' => true
-            ]);
-    }
-
-    /**
-     * Test registration with invalid data.
-     */
-    public function test_register_user_invalid_data()
-    {
-        $data = [
-            'email' => 'invalid-email',
-            'password' => 'short',
-        ];
-
-        $response = $this->postJson('/api/auth/register', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonStructure(['errors']);
-    }
-
-    /**
      * Test user login success.
      */
     public function test_login_user_success()
@@ -129,25 +91,6 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Logged out successfully']);
-    }
-
-    /**
-     * Edge Case: Register user with duplicate email.
-     */
-    public function test_register_user_duplicate_email()
-    {
-        User::factory()->create(['email' => 'test@example.com']);
-
-        $data = [
-            'email' => 'test@example.com',
-            'password' => 'password123',
-            'User_Status' => 1,
-        ];
-
-        $response = $this->postJson('/api/auth/register', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonStructure(['errors']);
     }
 
     /**
