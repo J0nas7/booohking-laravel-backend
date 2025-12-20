@@ -12,7 +12,8 @@ use App\Http\Controllers\{
 };
 use App\Services\{
     AuthService,
-    BookingService
+    BookingService,
+    UserService
 };
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -39,6 +40,10 @@ class TestAllPublicMethodsHaveTestsTest extends TestCase
         // ---- Services ----
         AuthService::class => [
             'path' => 'tests/Unit/Services/AuthServiceTest/',
+            'location' => 'per_method',
+        ],
+        UserService::class => [
+            'path' => 'tests/Unit/Services/UserServiceTest/',
             'location' => 'per_method',
         ],
         BookingService::class => [
