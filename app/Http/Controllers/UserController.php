@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ApiResponse;
+use App\Http\Requests\{
+    RegisterUserRequest
+};
 use App\Models\User;
-use App\Services\AuthService;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Eloquent\Model;
 
 class UserController extends BaseController
 {
     protected string $modelClass = User::class;
 
     protected array $with = [];
+
+    protected $userService;
 
     /**
      * Validation rules for creating/updating a user.
@@ -28,79 +33,86 @@ class UserController extends BaseController
         ];
     }
 
-    public function __construct()
+    /**
+     * @param UserService $userService
+     * @return void
+     */
+    public function __construct(UserService $userService)
     {
+        $this->userService = $userService;
         $this->middleware('role:ROLE_ADMIN')->only(['show']);
+        $this->middleware(
+            'auth:api',
+            ['except' => [
+                'index',
+                'store',
+                'show',
+            ]]
+        );
     }
 
+    // List all users (admin only)
     /**
-     * List all users (admin only)
+     * @param Request $request
+     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
-        $users = ($this->modelClass)::with($this->with)->get();
-        return response()->json($users);
+        $result = $this->userService->indexUsers();
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Store a new user.
     /**
-     * Store a new user
+     * @param Request $request
+     * @return JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate($this->rules());
-
-        // Hash the password
-        $data['password'] = Hash::make($data['password']);
-
-        $user = ($this->modelClass)::create($data);
-
-        $this->afterStore($user);
-
-        return response()->json($user, 201);
+        /** @var RegisterUserRequest $request */
+        $validated = $request->validated();
+        $result = $this->userService->storeUser($validated);
+        $this->afterStore($result->data['user']);
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Show a specific user
     /**
-     * Show a specific user
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        $user = ($this->modelClass)::with($this->with)->findOrFail($id);
-        return response()->json($user);
+        $result = $this->userService->showUser($id);
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Update a user
     /**
-     * Update a user
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
      */
     public function update(Request $request, int $id): JsonResponse
     {
-        $user = ($this->modelClass)::findOrFail($id);
-
-        $data = $request->validate($this->rules());
-
-        // Hash password if present
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
-
-        $user->update($data);
-
-        $this->afterUpdate($user);
-
-        return response()->json($user);
+        $validated = $request->validate($this->rules());
+        $result = $this->userService->updateUser($validated, $id);
+        $this->afterUpdate($result->data['user']);
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Delete a user
     /**
-     * Delete a user
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $user = ($this->modelClass)::findOrFail($id);
-
-        $user->delete();
-
-        $this->afterDestroy($user);
-
-        return response()->json(['message' => 'Deleted successfully']);
+        $result = $this->userService->destroyUser($id);
+        $this->afterDestroy($result->data['user']);
+        return ApiResponse::fromServiceResult($result);
     }
 
     /**

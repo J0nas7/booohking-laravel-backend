@@ -2,44 +2,41 @@
 
 namespace App\Services;
 
-use App\Actions\RegisterUser\RegisterUser;
-use App\Actions\SendResetToken\SendResetToken;
+use App\Actions\{
+    SendResetToken\SendResetToken,
+};
+use Illuminate\Support\Facades\{
+    Auth,
+    Cache,
+    Password,
+};
+use Illuminate\Contracts\{
+    Mail\Mailer,
+    Hashing\Hasher,
+};
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Contracts\Mail\Mailer;
-use Illuminate\Contracts\Hashing\Hasher;
 use App\Helpers\ServiceResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
 
 class AuthService
 {
     protected Mailer $mail;
     protected Hasher $hasher;
 
-    // Dependency Injection
+    /**
+     * @param Mailer $mail
+     * @param Hasher $hasher
+     * @param SendResetToken $sendResetToken
+     * @return void
+     */
     public function __construct(
         Mailer $mail,
         Hasher $hasher,
-        protected RegisterUser $registerUser,
         protected SendResetToken $sendResetToken
     ) {
         $this->mail = $mail;
         $this->hasher = $hasher;
-    }
-
-    // Registers a new user, using action delegate.
-    /**
-     * @param array $validated
-     * @return ServiceResponse
-     */
-    public function registerUser(array $validated): ServiceResponse
-    {
-        return $this->registerUser->execute($validated);
     }
 
     // Activate the user's email account using the verification token.
@@ -49,24 +46,25 @@ class AuthService
      */
     public function activateAccount(array $validated): ServiceResponse
     {
-        // Find the user by verification token
-        $user = User::where('email_verification_token', $validated['token'])->first();
+        try {
+            // Find the user by verification token, throws exception if not found
+            $user = User::where('email_verification_token', $validated['token'])->firstOrFail();
 
-        if (!$user) {
+            // Update user email verification details
+            $user->email_verified_at = now();
+            $user->email_verification_token = null;
+            $user->save();
+
+            // Return a success message
+            return new ServiceResponse(
+                message: 'Email verified successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            // Handle case when user is not found with the given token
             return new ServiceResponse(
                 error: 'Invalid verification token'
             );
         }
-
-        // Update user email verification details
-        $user->email_verified_at = now();
-        $user->email_verification_token = null;
-        $user->save();
-
-        // Return a success message
-        return new ServiceResponse(
-            message: 'Email verified successfully'
-        );
     }
 
     // Authenticate a user and generate a JWT.
@@ -126,6 +124,7 @@ class AuthService
                 $user->forceFill([
                     'password' => $this->hasher->make($password)
                 ])->save();
+                Cache::forget('user:me:' . $user->id);
             }
         );
 

@@ -17,21 +17,23 @@ class AuthController extends Controller
 {
     protected $authService;
 
+    /**
+     * @param AuthService $authService
+     * @return void
+     */
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
-        $this->middleware('auth:api', ['except' => ['login', 'forgotPassword', 'resetPassword', 'register', 'activate', 'ok']]);
-    }
-
-    // Register a new user.
-    /**
-     * @param RegisterUserRequest $request
-     * @return JsonResponse
-     */
-    public function register(RegisterUserRequest $request)
-    {
-        $result = $this->authService->registerUser($request->validated());
-        return ApiResponse::fromServiceResult($result);
+        $this->middleware(
+            'auth:api',
+            ['except' => [
+                'login',
+                'forgotPassword',
+                'resetPassword',
+                'activate',
+                'ok'
+            ]]
+        );
     }
 
     // Activate the user's email account using the verification token.
