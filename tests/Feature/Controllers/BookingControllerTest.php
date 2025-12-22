@@ -49,7 +49,7 @@ class BookingControllerTest extends TestCase
             ->getJson('/api/bookings');
 
         $response->assertStatus(200);
-        $this->assertEquals(3, count($response->json('data')));
+        $this->assertEquals(3, count($response->json('data')['data']));
     }
 
     #[Test]
@@ -62,8 +62,8 @@ class BookingControllerTest extends TestCase
             ->getJson('/api/bookings');
 
         $response->assertStatus(200);
-        $this->assertCount(1, $response->json('data'));
-        $this->assertEquals($this->user->id, $response->json('data')[0]['User_ID']);
+        $this->assertCount(1, $response->json('data')['data']);
+        $this->assertEquals($this->user->id, $response->json('data')['data'][0]['User_ID']);
     }
 
     // ==== store() ====
@@ -126,9 +126,9 @@ class BookingControllerTest extends TestCase
 
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->getJson("/api/bookings/{$booking->Booking_ID}");
-
         $response->assertStatus(200);
-        $this->assertEquals($booking->Booking_ID, $response->json('Booking_ID'));
+
+        $this->assertEquals($booking->Booking_ID, $response->json('data')['Booking_ID']);
     }
 
     #[Test]
@@ -191,10 +191,12 @@ class BookingControllerTest extends TestCase
             ->assertJsonStructure([
                 'success',
                 'data' => [
-                    '*' => ['date', 'start', 'end']
+                    'data' => [
+                        '*' => ['date', 'start', 'end']
+                    ],
+                    'total',
+                    'pagination' => ['total', 'perPage', 'currentPage', 'lastPage']
                 ],
-                'total',
-                'pagination' => ['total', 'perPage', 'currentPage', 'lastPage']
             ]);
     }
 
@@ -214,7 +216,7 @@ class BookingControllerTest extends TestCase
             ->getJson("/api/bookings/{$this->provider->Provider_ID}/available-slots?service_id={$this->service->Service_ID}");
 
         $response->assertStatus(200);
-        $slots = $response->json('data');
+        $slots = $response->json('data')['data'];
 
         foreach ($slots as $slot) {
             $this->assertFalse(
@@ -244,7 +246,7 @@ class BookingControllerTest extends TestCase
             ->getJson("/api/bookings/{$this->provider->Provider_ID}/available-slots");
 
         $response->assertStatus(200);
-        $this->assertEmpty($response->json('data'));
+        $this->assertEmpty($response->json('data')['data']);
     }
 
     // ==== readBookingsByUserID() ====
@@ -311,8 +313,10 @@ class BookingControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'Booking_ID' => $booking->Booking_ID,
-                'User_ID' => $this->user->id
+                'data' => [
+                    'Booking_ID' => $booking->Booking_ID,
+                    'User_ID' => $this->user->id
+                ]
             ]);
 
         $this->assertDatabaseHas('bookings', [

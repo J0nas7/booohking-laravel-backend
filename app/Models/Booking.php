@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends BaseModel
@@ -11,6 +9,7 @@ class Booking extends BaseModel
     use SoftDeletes;
 
     const MODEL_NAME = "Booking";
+    protected $primaryKey = 'Booking_ID';
     const DELETED_AT = self::MODEL_NAME . '_DeletedAt';
 
     protected static function getModelPrefix(): string

@@ -42,12 +42,12 @@ class TestAllPublicMethodsHaveTestsTest extends TestCase
             'path' => 'tests/Unit/Services/AuthServiceTest/',
             'location' => 'per_method',
         ],
-        UserService::class => [
-            'path' => 'tests/Unit/Services/UserServiceTest/',
-            'location' => 'per_method',
-        ],
         BookingService::class => [
             'path' => 'tests/Unit/Services/BookingServiceTest/',
+            'location' => 'per_method',
+        ],
+        UserService::class => [
+            'path' => 'tests/Unit/Services/UserServiceTest/',
             'location' => 'per_method',
         ],
 

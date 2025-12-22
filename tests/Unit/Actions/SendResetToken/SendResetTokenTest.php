@@ -3,7 +3,6 @@
 namespace Tests\Unit\Actions\SendResetToken;
 
 use App\Actions\SendResetToken\SendResetToken;
-use App\Mail\ForgotPasswordMail;
 use App\Models\User;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,10 +19,12 @@ class SendResetTokenTest extends TestCase
     use RefreshDatabase;
 
     protected Mailer&MockInterface $mailMock;
+    protected SendResetToken $sendResetToken;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->sendResetToken = new SendResetToken();
 
         // Mock the Mailer
         $this->mailMock = Mockery::mock(Mailer::class);
@@ -40,7 +41,7 @@ class SendResetTokenTest extends TestCase
 
         $service = new SendResetToken();
 
-        $result = $service->execute([
+        $result = $this->sendResetToken->execute([
             'email' => $user->email,
         ]);
 
@@ -59,7 +60,7 @@ class SendResetTokenTest extends TestCase
 
         $service = new SendResetToken();
 
-        $result = $service->execute([
+        $result = $this->sendResetToken->execute([
             'email' => 'test@example.com',
         ]);
 
@@ -80,7 +81,7 @@ class SendResetTokenTest extends TestCase
 
         $service = new SendResetToken();
 
-        $result = $service->execute([
+        $result = $this->sendResetToken->execute([
             'email' => 'test@example.com',
         ]);
 
