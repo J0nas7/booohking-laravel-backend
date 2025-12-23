@@ -65,7 +65,6 @@ class UserController extends Controller
     public function store(RegisterUserRequest $request): JsonResponse
     {
         $result = $this->userService->storeUser($request->validated());
-        $this->afterStore($result->data['user']);
         return ApiResponse::fromServiceResult($result);
     }
 
@@ -91,7 +90,6 @@ class UserController extends Controller
     {
         $validated = $request->validate($this->rules());
         $result = $this->userService->updateUser($validated, $id);
-        $this->afterUpdate($result->data['user']);
         return ApiResponse::fromServiceResult($result);
     }
 
@@ -104,15 +102,6 @@ class UserController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $result = $this->userService->destroyUser($id);
-        $this->afterDestroy($result->data['user']);
         return ApiResponse::fromServiceResult($result);
     }
-
-    /**
-     * Optional hooks
-     */
-    protected function clearCache($resource): void {}
-    protected function afterStore($resource): void {}
-    protected function afterUpdate($resource): void {}
-    protected function afterDestroy($resource): void {}
 }

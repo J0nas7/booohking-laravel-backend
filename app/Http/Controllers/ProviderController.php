@@ -2,199 +2,94 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Provider;
+use App\Helpers\ApiResponse;
+use App\Http\Requests\ProviderDTORequest;
+use App\Http\Requests\ProvidersPageRequest;
 use App\Models\Service;
-use Illuminate\Http\Request;
+use App\Services\ProviderService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use Illuminate\Routing\Controller;
 
-class ProviderController extends BaseController
+class ProviderController extends Controller
 {
-    protected string $modelClass = Provider::class;
-
-    protected array $with = ['workingHours', 'bookings.service', 'service'];
-
-    /**
-     * Validation rules for Provider.
-     */
-    protected function rules(): array
-    {
-        return [
-            'Provider_Name' => 'required|string|max:255',
-            'Service_ID' => 'required|exists:services,Service_ID',
-            // Optional: validate working hours if you allow input directly
-            // 'Working_Hours' => 'array',
-        ];
-    }
-
-    /**
-     * ---- CUSTOM BUSINESS LOGIC ----
-     */
-    public function readProvidersByServiceID(Request $request, Service $service): JsonResponse
-    {
-        // Pagination
-        $page = max((int) $request->query('page', 1), 1);
-        $perPage = max((int) $request->query('perPage', 10), 1);
-
-        // Query providers that have the service
-        $query = Provider::with($this->with)
-            ->where('Service_ID', $service->Service_ID)
-            ->orderBy('Provider_Name');
-
-        // Paginate
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-
-        if ($paginated->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No providers found for this service',
-                'data' => [],
-                'pagination' => [
-                    'total' => 0,
-                    'perPage' => $perPage,
-                    'currentPage' => $page,
-                    'lastPage' => 0,
-                ]
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Providers found',
-            'data' => $paginated->items(),
-            'pagination' => [
-                'total' => $paginated->total(),
-                'perPage' => $paginated->perPage(),
-                'currentPage' => $paginated->currentPage(),
-                'lastPage' => $paginated->lastPage(),
-            ]
-        ]);
-    }
-
-    public function __construct()
-    {
+    public function __construct(
+        protected ProviderService $providerService
+    ) {
         // Only admins can create/update/delete providers
         $this->middleware('role:ROLE_ADMIN')->only(['store', 'update', 'destroy']);
     }
 
+    // List all providers in a paginated list.
     /**
-     * List all providers with optional eager loading.
+     * @param \App\Http\Requests\ProvidersPageRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(ProvidersPageRequest $request): JsonResponse
     {
-        // Get pagination parameters from query string, default page 1, 10 items per page
-        $page = max((int) $request->query('page', 1), 1);
-        $perPage = max((int) $request->query('perPage', 10), 1);
-
-        $query = ($this->modelClass)::query()->with($this->with);
-
-        // Paginate the results
-        $paginated = $query->orderBy('Provider_Name')
-            ->paginate($perPage, ['*'], 'page', $page);
-
-        return response()->json($paginated);
+        $result = $this->providerService->index($request->validatedPagination());
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // List providers by service in a paginated list.
     /**
-     * Create a new provider (admins only).
+     * @param \App\Http\Requests\ProvidersPageRequest $request
+     * @param \App\Models\Service $service
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request): JsonResponse
-    {
-        $data = $request->validate($this->rules());
+    public function readProvidersByServiceID(
+        ProvidersPageRequest $request,
+        Service $service
+    ): JsonResponse {
+        $result = $this->providerService->readByService(
+            $request->validatedPagination(),
+            $service
+        );
 
-        $item = ($this->modelClass)::create($data);
-
-        $this->afterStore($item);
-
-        return response()->json($item, 201);
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Show a single provider detailed.
     /**
-     * Show a single provider.
+     * @param int $id Provider primary key
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $modelName = Str::snake(class_basename($this->modelClass));
-        $cacheKey = "model:{$modelName}:{$id}";
-
-        // Check cache
-        $cachedResource = Cache::get($cacheKey);
-        if ($cachedResource) {
-            return response()->json(json_decode($cachedResource, true));
-        }
-
-        $item = ($this->modelClass)::with($this->with)->findOrFail($id);
-
-        // Cache for 1 hour
-        Cache::put($cacheKey, $item->toJson(), 3600);
-
-        return response()->json($item);
+        $result = $this->providerService->show($id);
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Create a new provider. (admins-only)
     /**
-     * Update a provider (admins only).
+     * @param \App\Http\Requests\ProviderDTORequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function store(ProviderDTORequest $request): JsonResponse
     {
-        $item = ($this->modelClass)::findOrFail($id);
-
-        $data = $request->validate($this->rules());
-
-        $item->update($data);
-
-        $this->afterUpdate($item);
-
-        return response()->json($item);
+        $result = $this->providerService->store($request->validated());
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Update an existing provider. (admins-only)
     /**
-     * Delete a provider (admins only).
+     * @param \App\Http\Requests\ProviderDTORequest $request
+     * @param int $id Provider primary key
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function update(ProviderDTORequest $request, int $id): JsonResponse
     {
-        $provider = ($this->modelClass)::findOrFail($id);
-
-        // Check if provider has any bookings
-        if ($provider->bookings()->exists()) {
-            return response()->json([
-                'message' => 'Cannot delete provider with existing bookings'
-            ], 400);
-        }
-
-        $provider->delete();
-
-        $this->afterDestroy($provider);
-
-        return response()->json(['message' => 'Deleted successfully']);
+        $result = $this->providerService->update($request->validated(), $id);
+        return ApiResponse::fromServiceResult($result);
     }
 
+    // Delete a provider if no bookings exist. (admins-only)
     /**
-     * Cache clearing.
+     * @param int $id Provider primary key
+     * @return \Illuminate\Http\JsonResponse
      */
-    protected function clearCache($resource): void
+    public function destroy(int $id): JsonResponse
     {
-        $modelName = Str::snake(class_basename($this->modelClass));
-        $keys = [
-            "model:{$modelName}:all",
-            "model:{$modelName}:{$this->getFieldName('ID')}",
-        ];
-
-        Cache::deleteMultiple($keys);
-    }
-
-    protected function afterStore($resource): void
-    {
-        $this->clearCache($resource);
-    }
-
-    protected function afterUpdate($resource): void
-    {
-        $this->clearCache($resource);
-    }
-
-    protected function afterDestroy($resource): void
-    {
-        $this->clearCache($resource);
+        $result = $this->providerService->destroy($id);
+        return ApiResponse::fromServiceResult($result);
     }
 }

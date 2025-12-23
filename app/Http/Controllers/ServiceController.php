@@ -2,210 +2,104 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Service;
+use App\Helpers\ApiResponse;
+use App\Http\Requests\ServiceDTORequest;
+use App\Http\Requests\ServicesPageRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Services\ServiceService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use Illuminate\Routing\Controller;
 
-class ServiceController extends BaseController
+class ServiceController extends Controller
 {
-    protected string $modelClass = Service::class;
-
-    protected array $with = ['bookings', 'providers.workingHours'];
-
-    protected function rules(): array
-    {
-        return [
-            'Service_Name' => 'required|string|max:255',
-            'User_ID' => 'required|exists:users,id',
-            'Service_DurationMinutes' => 'required|integer|min:1',
-            'Service_Description' => 'nullable|string',
-        ];
-    }
-
-    public function __construct()
-    {
+    public function __construct(
+        protected ServiceService $serviceService
+    ) {
+        // Only admins can create/update/delete services
         $this->middleware('role:ROLE_ADMIN')->only(['store', 'update', 'destroy']);
     }
 
+    // List all services (paginated).
     /**
-     * ---- CUSTOM BUSINESS LOGIC ----
+     * @param \App\Http\Requests\ServicesPageRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function readServicesByUserId(Request $request, User $user): JsonResponse
+    public function index(ServicesPageRequest $request): JsonResponse
     {
-        // Pagination
-        $page = max((int) $request->query('page', 1), 1);
-        $perPage = max((int) $request->query('perPage', 10), 1);
+        $result = $this->serviceService->index(
+            $request->validatedPagination()
+        );
 
-        $query = Service::with($this->with)
-            ->where('user_id', $user->id)
-            ->orderBy('Service_Name');
-
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-
-        if ($paginated->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No services found for this user',
-                'data' => [],
-                'pagination' => [
-                    'total' => 0,
-                    'perPage' => $perPage,
-                    'currentPage' => $page,
-                    'lastPage' => 0,
-                ]
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Services found',
-            'data' => $paginated->items(),
-            'pagination' => [
-                'total' => $paginated->total(),
-                'perPage' => $paginated->perPage(),
-                'currentPage' => $paginated->currentPage(),
-                'lastPage' => $paginated->lastPage(),
-            ]
-        ]);
+        return ApiResponse::fromServiceResult($result);
     }
 
-    // Anyone authenticated can see the list of services. Could even be public.
-    public function index(Request $request): JsonResponse
-    {
-        // Get pagination parameters from query string, defaults: page=1, perPage=10
-        $page = max((int) $request->query('page', 1), 1);
-        $perPage = max((int) $request->query('perPage', 10), 1);
-
-        $query = ($this->modelClass)::query();
-
-        if (!empty($this->with)) {
-            $query->with($this->with);
-        }
-
-        // Paginate results
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-
-        if ($paginated->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No services found',
-                'data' => [],
-                'pagination' => [
-                    'total' => 0,
-                    'perPage' => $perPage,
-                    'currentPage' => $page,
-                    'lastPage' => 0,
-                ]
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Services found',
-            'data' => $paginated->items(),
-            'pagination' => [
-                'total' => $paginated->total(),
-                'perPage' => $paginated->perPage(),
-                'currentPage' => $paginated->currentPage(),
-                'lastPage' => $paginated->lastPage(),
-            ]
-        ]);
-    }
-
-    // Only admins should be able to create new services.
-    public function store(Request $request): JsonResponse
-    {
-        $data = $request->validate($this->rules());
-
-        $item = ($this->modelClass)::create($data);
-
-        $this->afterStore($item);
-
-        return response()->json($item, 201);
-    }
-
-    // Anyone authenticated can view a service.
-    public function show(Request $request, int $id): JsonResponse
-    {
-        $modelName = Str::snake(class_basename($this->modelClass));
-        $cacheKey = "model:{$modelName}:{$id}";
-
-        // Check cache
-        $cachedResource = Cache::get($cacheKey);
-        if ($cachedResource) {
-            return response()->json(json_decode($cachedResource, true));
-        }
-
-        $item = ($this->modelClass)::with($this->with)->findOrFail($id);
-
-        // Cache for 1 hour
-        Cache::put($cacheKey, $item->toJson(), 3600);
-
-        return response()->json($item);
-    }
-
-    // Only admins can modify services.
-    public function update(Request $request, int $id): JsonResponse
-    {
-        $item = ($this->modelClass)::findOrFail($id);
-
-        $data = $request->validate($this->rules());
-
-        $item->update($data);
-
-        $this->afterUpdate($item);
-
-        return response()->json($item);
-    }
-
-    // Only admins can delete services.
-    public function destroy(Request $request, int $id): JsonResponse
-    {
-        $service = ($this->modelClass)::findOrFail($id);
-
-        // Check if service has any bookings
-        if ($service->bookings()->exists()) {
-            return response()->json([
-                'message' => 'Cannot delete service with existing bookings'
-            ], 400);
-        }
-
-        $service->delete();
-
-        $this->afterDestroy($service);
-
-        return response()->json(['message' => 'Deleted successfully']);
-    }
-
+    // List services by user (paginated).
     /**
-     * Cache clearing.
+     * @param \App\Http\Requests\ServicesPageRequest $request
+     * @param \App\Models\User $user
+     * @return \Illuminate\Http\JsonResponse
      */
-    protected function clearCache($resource): void
-    {
-        $modelName = Str::snake(class_basename($this->modelClass));
-        $keys = [
-            "model:{$modelName}:all",
-            "model:{$modelName}:{$this->getFieldName('ID')}",
-        ];
+    public function readServicesByUserId(
+        ServicesPageRequest $request,
+        User $user
+    ): JsonResponse {
+        $result = $this->serviceService->readByUser(
+            $request->validatedPagination(),
+            $user
+        );
 
-        Cache::deleteMultiple($keys);
+        return ApiResponse::fromServiceResult($result);
     }
 
-    protected function afterStore($resource): void
+    // Show a single service.
+    /**
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(int $id): JsonResponse
     {
-        $this->clearCache($resource);
+        $result = $this->serviceService->show($id);
+        return ApiResponse::fromServiceResult($result);
     }
 
-    protected function afterUpdate($resource): void
+    // Create a new service (admins only).
+    /**
+     * @param \App\Http\Requests\ServiceDTORequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(ServiceDTORequest $request): JsonResponse
     {
-        $this->clearCache($resource);
+        $result = $this->serviceService->store(
+            $request->validated()
+        );
+
+        return ApiResponse::fromServiceResult($result);
     }
 
-    protected function afterDestroy($resource): void
+    // Update a service (admins only).
+    /**
+     * @param \App\Http\Requests\ServiceDTORequest $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(ServiceDTORequest $request, int $id): JsonResponse
     {
-        $this->clearCache($resource);
+        $result = $this->serviceService->update(
+            $request->validated(),
+            $id
+        );
+
+        return ApiResponse::fromServiceResult($result);
+    }
+
+    // Delete a service (admins only).
+    /**
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $result = $this->serviceService->destroy($id);
+        return ApiResponse::fromServiceResult($result);
     }
 }

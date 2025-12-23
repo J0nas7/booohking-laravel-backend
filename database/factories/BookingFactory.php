@@ -18,19 +18,20 @@ class BookingFactory extends Factory
 
     public function definition(): array
     {
+        static $sequence = 0;
+
         $durationMinutes = $this->faker->randomElement([30, 45, 60, 90, 120]);
 
         // Base date
         $base = Carbon::now()
-            ->addDays($this->faker->numberBetween(1, 14))
-            ->setHour($this->faker->numberBetween(8, 16))
+            ->addDays(1)
+            ->setHour(8)
             ->setMinute(0)
             ->setSecond(0);
 
-        // Offset each factory instance by 30-minute slots
-        $startAt = (clone $base)->addMinutes(
-            $this->faker->numberBetween(0, 16) * 30
-        );
+        // Each instance moves forward by 30 minutes
+        $startAt = (clone $base)->addMinutes($sequence * 30);
+        $sequence++;
 
         return [
             // Relationship-driven FKs
