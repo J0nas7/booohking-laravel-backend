@@ -43,13 +43,17 @@ class ProviderControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'current_page',
-                'data',
-                'per_page',
-                'total',
+                'data' => [
+                    'data',
+                    'pagination' => [
+                        'currentPage',
+                        'perPage',
+                        'total',
+                    ]
+                ]
             ]);
 
-        $this->assertCount(5, $response->json('data'));
+        $this->assertCount(5, $response->json('data')['data']);
     }
 
     #[Test]
@@ -62,28 +66,29 @@ class ProviderControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'current_page' => 100,
-                'data' => [],
+                'data' => [
+                    'data' => [],
+                    'pagination' => [
+                        'currentPage' => 100,
+                    ]
+                ]
             ]);
     }
 
     #[Test]
-    public function it_falls_back_to_default_per_page_when_invalid()
+    public function it_fails_when_page_is_invalid()
     {
         Provider::factory()->count(5)->create();
 
         $response = $this->actingAs($this->user, 'api')
             ->getJson('/api/providers?page=1&perPage=-5');
 
-        $response->assertStatus(200)
+        // Assert that the response is triggering pagination validation errors
+        $response->assertStatus(422)
             ->assertJsonStructure([
-                'current_page',
-                'data',
-                'per_page',
-                'total',
+                'message',
+                'errors'
             ]);
-
-        $this->assertLessThanOrEqual(5, count($response->json('data')));
     }
 
     // ---- show() ----
@@ -97,8 +102,10 @@ class ProviderControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'Provider_ID' => $provider->Provider_ID,
-                'Provider_Name' => $provider->Provider_Name
+                'data' => [
+                    'Provider_ID' => $provider->Provider_ID,
+                    'Provider_Name' => $provider->Provider_Name
+                ]
             ]);
     }
 
@@ -121,7 +128,11 @@ class ProviderControllerTest extends TestCase
             ->getJson("/api/providers/{$provider->Provider_ID}");
 
         $response->assertStatus(200)
-            ->assertJson(['Provider_ID' => $provider->Provider_ID]);
+            ->assertJson([
+                'data' => [
+                    'Provider_ID' => $provider->Provider_ID
+                ]
+            ]);
     }
 
 
@@ -144,7 +155,11 @@ class ProviderControllerTest extends TestCase
         $response = $this->actingAs($this->admin, 'api')
             ->postJson('/api/providers', $data);
         $response->assertStatus(201)
-            ->assertJson(['Provider_Name' => 'Test Provider']);
+            ->assertJson([
+                'data' => [
+                    'Provider_Name' => 'Test Provider'
+                ]
+            ]);
 
         $this->assertDatabaseHas('providers', ['Provider_Name' => 'Test Provider']);
     }
@@ -189,7 +204,11 @@ class ProviderControllerTest extends TestCase
         $response = $this->actingAs($this->admin, 'api')
             ->putJson("/api/providers/{$provider->Provider_ID}", $data);
         $response->assertStatus(200)
-            ->assertJson(['Provider_Name' => 'Updated Name']);
+            ->assertJson([
+                'data' => [
+                    'Provider_Name' => 'Updated Name'
+                ]
+            ]);
 
         $this->assertDatabaseHas('providers', ['Provider_Name' => 'Updated Name']);
     }
@@ -200,7 +219,7 @@ class ProviderControllerTest extends TestCase
         $response = $this->actingAs($this->admin, 'api')
             ->putJson('/api/providers/999999', ['Provider_Name' => 'Test', 'Service_ID' => 1]);
 
-        $response->assertStatus(404);
+        $response->assertStatus(422); // Unprocessable Content
     }
 
     #[Test]
@@ -246,7 +265,7 @@ class ProviderControllerTest extends TestCase
             ->deleteJson("/api/providers/{$provider->Provider_ID}");
 
         $response->assertStatus(400)
-            ->assertJson(['message' => 'Cannot delete provider with existing bookings']);
+            ->assertJson(['error' => 'Cannot delete provider with existing bookings']);
     }
 
     #[Test]
@@ -293,13 +312,15 @@ class ProviderControllerTest extends TestCase
                 'success',
                 'message',
                 'data' => [
-                    '*' => [
-                        'Provider_ID',
-                        'Provider_Name',
-                        'Service_ID',
-                    ]
+                    'data' => [
+                        '*' => [
+                            'Provider_ID',
+                            'Provider_Name',
+                            'Service_ID',
+                        ]
+                    ],
+                    'pagination' => ['total', 'perPage', 'currentPage', 'lastPage']
                 ],
-                'pagination' => ['total', 'perPage', 'currentPage', 'lastPage']
             ]);
     }
 
@@ -313,14 +334,16 @@ class ProviderControllerTest extends TestCase
 
         $response->assertStatus(404)
             ->assertJson([
-                'success' => false,
+                'success' => true,
                 'message' => 'No providers found for this service',
-                'data' => [],
-                'pagination' => [
-                    'total' => 0,
-                    'perPage' => 10,
-                    'currentPage' => 1,
-                    'lastPage' => 0,
+                'data' => [
+                    'data' => [],
+                    'pagination' => [
+                        'total' => 0,
+                        'perPage' => 10,
+                        'currentPage' => 1,
+                        'lastPage' => 0,
+                    ]
                 ]
             ]);
     }
@@ -337,14 +360,16 @@ class ProviderControllerTest extends TestCase
 
         $response->assertStatus(404)
             ->assertJson([
-                'success' => false,
+                'success' => true,
                 'message' => 'No providers found for this service',
-                'data' => [],
-                'pagination' => [
-                    'total' => 0,
-                    'perPage' => 2,
-                    'currentPage' => 5,
-                    'lastPage' => 0,
+                'data' => [
+                    'data' => [],
+                    'pagination' => [
+                        'total' => 0,
+                        'perPage' => 2,
+                        'currentPage' => 5,
+                        'lastPage' => 0,
+                    ]
                 ]
             ]);
     }

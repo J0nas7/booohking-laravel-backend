@@ -27,6 +27,23 @@ class ServiceService
             ->orderBy('Service_Name')
             ->paginate($perPage, ['*'], 'page', $page);
 
+        // Empty case
+        if ($paginated->isEmpty()) {
+            return new ServiceResponse(
+                data: [
+                    'data' => [],
+                    'pagination' => [
+                        'total' => 0,
+                        'perPage' => $perPage,
+                        'currentPage' => $page,
+                        'lastPage' => 0,
+                    ]
+                ],
+                message: 'No services found for this user',
+                status: 404
+            );
+        }
+
         return new ServiceResponse(
             data: [
                 'data' => $paginated->items(),
@@ -65,7 +82,7 @@ class ServiceService
                         'perPage' => $perPage,
                         'currentPage' => $page,
                         'lastPage' => 0,
-                    ],
+                    ]
                 ],
                 message: 'No services found for this user',
                 status: 404

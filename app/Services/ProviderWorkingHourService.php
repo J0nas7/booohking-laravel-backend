@@ -124,7 +124,7 @@ class ProviderWorkingHourService
 
         return new ServiceResponse(
             data: $item,
-            message: 'Working hour deleted successfully'
+            message: 'Deleted successfully'
         );
     }
 

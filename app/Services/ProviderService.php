@@ -173,7 +173,7 @@ class ProviderService
 
         return new ServiceResponse(
             data: $provider,
-            message: 'Provider deleted successfully'
+            message: 'Deleted successfully'
         );
     }
 

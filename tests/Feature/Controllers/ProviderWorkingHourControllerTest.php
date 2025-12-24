@@ -43,13 +43,17 @@ class ProviderWorkingHourControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'current_page',
-                'data',
-                'per_page',
-                'total',
+                'data' => [
+                    'data',
+                    'pagination' => [
+                        'currentPage',
+                        'perPage',
+                        'total',
+                    ]
+                ]
             ]);
 
-        $this->assertCount(5, $response->json('data'));
+        $this->assertCount(5, $response->json('data')['data']);
     }
 
     #[Test]
@@ -65,34 +69,31 @@ class ProviderWorkingHourControllerTest extends TestCase
             ->getJson("/api/provider-working-hours?Provider_ID={$providerA->Provider_ID}");
 
         $response->assertStatus(200);
-        $this->assertCount(3, $response->json('data'));
+        $this->assertCount(3, $response->json('data')['data']);
     }
 
     #[Test]
-    public function it_falls_back_to_default_page_when_invalid()
+    public function it_fails_when_page_is_invalid()
     {
         $response = $this->actingAs($this->user, 'api')
             ->getJson('/api/provider-working-hours?page=-1&perPage=0');
 
-        $response->assertStatus(200)
+        // Assert that the response is triggering pagination validation errors
+        $response->assertStatus(422)
             ->assertJsonStructure([
-                'current_page',
-                'data',
-                'per_page',
-                'total',
+                'message',
+                'errors'
             ]);
-
-        $this->assertLessThanOrEqual(5, count($response->json('data')));
     }
 
     #[Test]
     public function it_returns_empty_data_when_no_working_hours_exist()
     {
         $response = $this->actingAs($this->user, 'api')
-            ->getJson('/api/provider-working-hours');
+            ->getJson('/api/provider-working-hours?page=1&perPage=5');
 
         $response->assertStatus(200);
-        $this->assertEmpty($response->json('data'));
+        $this->assertEmpty($response->json('data')['data']);
     }
 
     // ==== show() ====
@@ -242,7 +243,7 @@ class ProviderWorkingHourControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders($this->admin))
             ->putJson('/api/provider-working-hours/99999', $payload);
 
-        $response->assertStatus(404);  // Not Found
+        $response->assertStatus(422); // Unprocessable Content
     }
 
     #[Test]

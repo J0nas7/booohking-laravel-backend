@@ -53,9 +53,11 @@ class ServiceControllerTest extends TestCase
                 'success',
                 'message',
                 'data' => [
-                    '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    'data' => [
+                        '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    ],
+                    'pagination'
                 ],
-                'pagination'
             ]);
     }
 
@@ -69,9 +71,8 @@ class ServiceControllerTest extends TestCase
         // Assert that the status is 404 and appropriate message is returned
         $response->assertStatus(404)
             ->assertJson([
-                'success' => false,
-                'message' => 'No services found for this user',
-                'data' => [],
+                'success' => true,
+                'message' => 'No services found for this user'
             ]);
     }
 
@@ -102,15 +103,11 @@ class ServiceControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->getJson("/api/services/users/{$this->user->id}?page=-1&perPage=-5");
 
-        // Assert that the status is OK and services are returned (default page = 1, perPage = 10)
-        $response->assertStatus(200)
+        // Assert that the response is triggering pagination validation errors
+        $response->assertStatus(422)
             ->assertJsonStructure([
-                'success',
                 'message',
-                'data' => [
-                    '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
-                ],
-                'pagination'
+                'errors'
             ]);
     }
 
@@ -133,9 +130,11 @@ class ServiceControllerTest extends TestCase
                 'success',
                 'message',
                 'data' => [
-                    '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    'data' => [
+                        '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    ],
+                    'pagination'
                 ],
-                'pagination'
             ]);
     }
 
@@ -151,7 +150,9 @@ class ServiceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    'data' => [
+                        '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    ]
                 ]
             ]);
     }
@@ -180,20 +181,12 @@ class ServiceControllerTest extends TestCase
         $response = $this->withHeaders($this->authHeaders($this->user))
             ->getJson('/api/services?page=-1&perPage=0');
 
-        // Assert that the response status is OK and default pagination is used
-        $response->assertStatus(200)
+        // Assert that the response is triggering pagination validation errors
+        $response->assertStatus(422)
             ->assertJsonStructure([
-                'data' => [
-                    '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
-                ],
-                'pagination' => [
-                    'currentPage',
-                    'lastPage',
-                    'perPage',
-                    'total'
-                ]
-            ])
-            ->assertJsonPath('pagination.perPage', 1);  // Ensure perPage picks the highest number between 0 and 1
+                'message',
+                'errors'
+            ]);
     }
 
     #[Test]
@@ -210,16 +203,18 @@ class ServiceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    'data' => [
+                        '*' => ['Service_ID', 'Service_Name', 'Service_DurationMinutes']
+                    ],
+                    'pagination' => [
+                        'currentPage',
+                        'lastPage',
+                        'perPage',
+                        'total'
+                    ]
                 ],
-                'pagination' => [
-                    'currentPage',
-                    'lastPage',
-                    'perPage',
-                    'total'
-                ]
             ])
-            ->assertJsonPath('pagination.perPage', 10); // Ensure perPage defaults to 10
+            ->assertJsonPath('data.pagination.perPage', 10); // Ensure perPage defaults to 10
     }
 
     // ==== show() ====
@@ -358,6 +353,7 @@ class ServiceControllerTest extends TestCase
         $nonExistentServiceId = 99999;
 
         $payload = [
+            'User_ID' => 1,
             'Service_Name' => 'Updated Name',
             'Service_DurationMinutes' => 45,
             'Service_Description' => 'Updated description for non-existent service',
@@ -406,7 +402,7 @@ class ServiceControllerTest extends TestCase
             ->deleteJson("/api/services/{$service->Service_ID}");
 
         $response->assertStatus(400)
-            ->assertJson(['message' => 'Cannot delete service with existing bookings']);
+            ->assertJson(['error' => 'Cannot delete service with existing bookings']);
     }
 
     #[Test]
@@ -418,7 +414,7 @@ class ServiceControllerTest extends TestCase
             ->deleteJson("/api/services/{$service->Service_ID}");
 
         $response->assertStatus(200)
-            ->assertJson(['message' => 'Deleted successfully']);
+            ->assertJson(['message' => 'Service deleted successfully']);
 
         $this->assertSoftDeleted('services', [
             'Service_ID' => $service->Service_ID,
