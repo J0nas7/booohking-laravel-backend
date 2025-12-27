@@ -127,7 +127,7 @@ jobs:
           SCW_DEFAULT_REGION: fr-par
 
       - name: Terraform Apply - Update Scaleway Container with New Image
-        run: terraform apply tfplan -auto-approve
+        run: terraform apply "tfplan" -auto-approve
         env:
           TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           TF_VAR_scaleway_access_key: ${{ secrets.SCW_ACCESS_KEY }}
