@@ -119,6 +119,7 @@ jobs:
           TF_VAR_db_url: ${{ secrets.DB_URL }}
           TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
           TF_VAR_mail_password: ${{ secrets.MAIL_PASSWORD }}
+          TF_VAR_namespace_name: ${{ secrets.NAMESPACE_NAME }}
 
       - name: Terraform Apply - Update Scaleway Container with New Image
         run: terraform apply tfplan -auto-approve
@@ -132,3 +133,4 @@ jobs:
           TF_VAR_db_url: ${{ secrets.DB_URL }}
           TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
           TF_VAR_mail_password: ${{ secrets.MAIL_PASSWORD }}
+          TF_VAR_namespace_name: ${{ secrets.NAMESPACE_NAME }}
