@@ -22,3 +22,21 @@ module "laravel_app" {
   redis_host     = var.redis_host
   redis_password = var.redis_password
 }
+
+terraform {
+  required_providers {
+    scaleway = {
+      source  = "scaleway/scaleway"
+      version = "~> 2.9"  # pick the latest stable version
+    }
+  }
+
+  required_version = ">= 1.5.0"
+}
+
+provider "scaleway" {
+  access_key  = var.scaleway_access_key
+  secret_key  = var.scaleway_secret_key
+  default_project_id = var.scaleway_project_id
+  region      = var.region
+}

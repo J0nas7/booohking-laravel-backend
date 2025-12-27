@@ -72,3 +72,23 @@ variable "cpu_limit" {
     type = number
     default = 140
 }
+
+
+variable "scaleway_access_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "scaleway_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "scaleway_project_id" {
+  type = string
+}
+
+variable "region" {
+  type    = string
+  default = "fr-par"
+}
