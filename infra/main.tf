@@ -48,4 +48,5 @@ provider "scaleway" {
   secret_key         = var.scaleway_secret_key
   project_id = var.scaleway_project_id
   region             = var.region
+  zone               = "fr-par-1"
 }

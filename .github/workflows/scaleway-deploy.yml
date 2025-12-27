@@ -111,6 +111,7 @@ jobs:
         run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
         working-directory: infra
         env:
+          TF_LOG: DEBUG
           TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           TF_VAR_scaleway_access_key: ${{ secrets.SCW_ACCESS_KEY }}
           TF_VAR_scaleway_secret_key: ${{ secrets.SCW_SECRET_KEY }}
