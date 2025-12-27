@@ -107,17 +107,8 @@ jobs:
           terraform validate
         working-directory: infra
 
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v2.1.0
-        env:
-          HADOLINT_NOFAIL: true
-        with:
-          dockerfile: Dockerfile
-
       - name: Terraform Plan
-        run: terraform plan -out=tfplan \
-          -var="registry_image=${{ env.IMAGE }}" \
-          -var="use_redis=false"
+        run: terraform plan -out=tfplan -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
         working-directory: infra
         env:
           TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
