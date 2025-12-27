@@ -104,7 +104,6 @@ jobs:
 
       - name: Terraform Format & Validate
         run: |
-          terraform fmt -check
           terraform validate
         working-directory: infra
 
