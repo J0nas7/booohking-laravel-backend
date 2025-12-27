@@ -108,9 +108,9 @@ jobs:
         working-directory: infra
 
       - name: Lint Dockerfile
-        uses: docker://hadolint/hadolint:latest
+        uses: hadolint/hadolint-action@v2.1.0
         with:
-          args: Dockerfile
+          dockerfile: Dockerfile
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan \
