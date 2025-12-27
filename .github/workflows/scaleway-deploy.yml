@@ -1,0 +1,129 @@
+name: Deploy Laravel to Scaleway
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  SCW_REGISTRY: "${{ secrets.SCW_REGISTRY }}"
+  IMAGE_NAME: "${{ secrets.IMAGE_NAME }}"
+  TF_VAR_app_key: ${{ secrets.APP_KEY }}
+  TF_VAR_db_url: ${{ secrets.DB_URL }}
+  TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+  TF_VAR_mail_password: ${{ secrets.MAIL_PASSWORD }}
+  TF_VAR_mail_host: ${{ secrets.MAIL_HOST }}
+  TF_VAR_mail_username: ${{ secrets.MAIL_USERNAME }}
+  TF_VAR_mail_from_address: ${{ secrets.MAIL_FROM_ADDRESS }}
+  TF_VAR_mail_from_name: ${{ secrets.MAIL_FROM_NAME }}
+  TF_VAR_session_driver: ${{ secrets.SESSION_DRIVER }}
+  #TF_VAR_redis_host: {{ secrets.REDIS_HOST }}
+  #TF_VAR_redis_password: {{ secrets.REDIS_PASSWORD }}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Laravel tests
+        run: php artisan test
+        env:
+          APP_ENV: testing
+          APP_KEY: ${{ secrets.APP_KEY }}
+
+          DB_URL: ${{ secrets.DB_URL }}
+
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
+          MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+
+          SESSION_DRIVER: ${{ secrets.SESSION_DRIVER }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Scaleway Container Registry
+        run: |
+          echo "${{ secrets.SCW_SECRET_KEY }}" | docker login rg.fr-par.scw.cloud -u nologin --password-stdin
+
+      - name: Set up Docker image tag
+        run: |
+          TIMESTAMP=$(date +%d-%b-%Y__%H.%M.%S)
+          IMAGE="${{ env.SCW_REGISTRY }}/${{ env.IMAGE_NAME }}:$TIMESTAMP"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      #- name: Prepare .env file
+        #run: |
+          #cp .env.deploy .env
+          #echo "DB_URL=${{ secrets.DB_URL }}" >> .env
+          #echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
+      - name: Build and push Docker image (with caching)
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: infra
+        env:
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_DEFAULT_REGION: fr-par
+
+      - name: Terraform Format & Validate
+        run: |
+          terraform fmt -check
+          terraform validate
+        working-directory: infra
+
+      - name: Lint Dockerfile
+        uses: docker://hadolint/hadolint:latest
+        with:
+          args: Dockerfile
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan \
+          -var="registry_image=${{ env.IMAGE }}" \
+          -var="use_redis=false"
+        working-directory: infra
+        env:
+          TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          TF_VAR_container_name: ${{ secrets.SCW_CONTAINER_NAME }}
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+
+      - name: Terraform Apply - Update Scaleway Container with New Image
+        run: terraform apply tfplan -auto-approve
+        working-directory: infra
+        env:
+          TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          TF_VAR_container_name: ${{ secrets.SCW_CONTAINER_NAME }}
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_DEFAULT_REGION: fr-par
