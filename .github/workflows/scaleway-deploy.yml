@@ -108,7 +108,7 @@ jobs:
         working-directory: infra
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
+        run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
         working-directory: infra
         env:
           TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
