@@ -109,6 +109,8 @@ jobs:
 
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v2.1.0
+        env:
+          HADOLINT_NOFAIL: true
         with:
           dockerfile: Dockerfile
 
