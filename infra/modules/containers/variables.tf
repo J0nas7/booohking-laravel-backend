@@ -8,26 +8,26 @@ variable "namespace_id" {
     type = string
 }
 variable "app_key" {
-    type = string,
+    type = string
     sensitive = true
 }
 variable "db_url" {
-    type = string,
+    type = string
     sensitive = true
 }
 variable "jwt_secret" {
-    type = string,
+    type = string
     sensitive = true
 }
 variable "mail_password" {
-    type = string,
+    type = string
     sensitive = true
 }
 variable "mail_host" {
     type = string
 }
 variable "mail_port" {
-    type = string,
+    type = string
     default = "587"
 }
 variable "mail_username" {
@@ -40,35 +40,35 @@ variable "mail_from_name" {
     type = string
 }
 variable "session_driver" {
-    type = string,
+    type = string
     default = "database"
 }
 variable "use_redis" {
-    type = bool,
+    type = bool
     default = false
 }
 variable "redis_host" {
-    type = string,
+    type = string
     default = null
 }
 variable "redis_password" {
-    type = string,
-    sensitive = true,
+    type = string
+    sensitive = true
     default = null
 }
 variable "min_scale" {
-    type = number,
+    type = number
     default = 0
 }
 variable "max_scale" {
-    type = number,
+    type = number
     default = 10
 }
 variable "memory_limit" {
-    type = number,
+    type = number
     default = 256
 }
 variable "cpu_limit" {
-    type = number,
+    type = number
     default = 140
 }
