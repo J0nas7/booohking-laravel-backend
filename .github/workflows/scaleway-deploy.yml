@@ -95,7 +95,6 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: infra
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
@@ -105,11 +104,9 @@ jobs:
       - name: Terraform Format & Validate
         run: |
           terraform validate
-        working-directory: infra
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
-        working-directory: infra
         env:
           TF_LOG: DEBUG
           SCW_DEBUG: 1
@@ -125,7 +122,6 @@ jobs:
 
       - name: Terraform Apply - Update Scaleway Container with New Image
         run: terraform apply tfplan -auto-approve
-        working-directory: infra
         env:
           TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           TF_VAR_scaleway_access_key: ${{ secrets.SCW_ACCESS_KEY }}
