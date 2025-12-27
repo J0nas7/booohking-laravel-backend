@@ -22,6 +22,11 @@ module "laravel_app" {
   redis_host        = var.redis_host
   redis_password    = var.redis_password
 
+  scaleway_access_key = var.scaleway_access_key
+  scaleway_secret_key = var.scaleway_secret_key
+  scaleway_project_id = var.scaleway_project_id
+  region              = var.region
+
   providers = {
     scaleway = scaleway
   }
