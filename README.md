@@ -98,3 +98,33 @@ Frontend – Jest
 ```bash
 docker compose exec frontend npx jest
 ```
+
+## Deploy project to production
+
+### Required Terraform variables, retrieved from Github Secrets inside the repo
+
+These must be provided, otherwise Terraform will fail or the app will break.
+
+```bash
+APP_KEY
+IMAGE_NAME
+JWT_SECRET
+MAIL_FROM_ADDRESS
+MAIL_FROM_NAME
+MAIL_HOST
+MAIL_PASSWORD
+MAIL_USERNAME
+SCW_ACCESS_KEY
+SCW_CONTAINER_NAME
+SCW_DEFAULT_ORGANIZATION_ID
+SCW_DEFAULT_PROJECT_ID
+SCW_REGISTRY
+SCW_SECRET_KEY
+SESSION_DRIVER
+```
+
+### Redis
+
+Since this is a portfolio-project, and cost-awareness is important, Redis is not used in production.
+
+That requires a VM which doesn't support scale-to-zero. Therefore Redis is only used in development.
