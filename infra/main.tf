@@ -21,6 +21,10 @@ module "laravel_app" {
   use_redis      = var.use_redis
   redis_host     = var.redis_host
   redis_password = var.redis_password
+
+  providers = {
+    scaleway = scaleway
+  }
 }
 
 terraform {
