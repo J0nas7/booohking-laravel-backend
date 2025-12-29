@@ -1,6 +1,10 @@
+locals {
+  image_hash = substr(sha1(var.registry_image), 0, 8)
+}
+
 resource "scaleway_container" "laravel_app" {
   # new container each deploy
-  name           = "${var.container_name}-${replace(var.registry_image, "[:/]", "-")}"
+  name = "${var.container_name}-${local.image_hash}"
   registry_image = var.registry_image
   namespace_id   = var.namespace_id
   port           = 8080
