@@ -94,6 +94,7 @@ jobs:
           rm -f infra/.terraform.lock.hcl
 
       - name: Terraform Init
+        working-directory: infra
         run: terraform init
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
@@ -102,12 +103,14 @@ jobs:
           SCW_DEFAULT_REGION: fr-par
 
       - name: Terraform Format & Validate
+        working-directory: infra
         run: |
           terraform validate
 
       - name: Terraform Plan
-        #run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
-        run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}"
+        working-directory: infra
+        run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
+        #run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}"
         env:
           TF_LOG: DEBUG
           SCW_DEBUG: 1
@@ -127,6 +130,7 @@ jobs:
           SCW_DEFAULT_REGION: fr-par
 
       - name: Terraform Apply - Update Scaleway Container with New Image
+        working-directory: infra
         run: terraform apply -auto-approve tfplan
         env:
           TF_VAR_scaleway_project_id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
