@@ -14,7 +14,7 @@ resource "scaleway_container" "laravel_app" {
       APP_NAME    = "Booohking"
       APP_ENV     = "production"
       APP_DEBUG   = "false"
-      APP_URL     = "https://${scaleway_container.laravel_app.domain_name}"
+      APP_URL     = "https://nsbooohkinglaravelban2j1epl7-booohking-laravel-backend.functions.fnc.fr-par.scw.cloud"
       LOG_CHANNEL = "stderr"
 
       SESSION_DRIVER    = var.session_driver
