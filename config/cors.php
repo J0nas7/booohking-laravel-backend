@@ -19,7 +19,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_origins' => [
+        // DEV
+        'http://localhost:3000',
+        // PROD
+        'https://nsbooohkingnextjsfromk7apuyb-booohking-nextjs-frontend.functions.fnc.fr-par.scw.cloud',
+    ],
 
     'allowed_origins_patterns' => [],
 

@@ -123,7 +123,6 @@ jobs:
           TF_VAR_mail_password: ${{ secrets.MAIL_PASSWORD }}
           TF_VAR_namespace_name: ${{ secrets.NAMESPACE_NAME }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           SCW_DEFAULT_REGION: fr-par
 
       - name: Terraform Apply - Update Scaleway Container with New Image
@@ -140,5 +139,4 @@ jobs:
           TF_VAR_mail_password: ${{ secrets.MAIL_PASSWORD }}
           TF_VAR_namespace_name: ${{ secrets.NAMESPACE_NAME }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           SCW_DEFAULT_REGION: fr-par
