@@ -95,7 +95,7 @@ jobs:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
           SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
-          TF_API_TOKEN: ${{ secrets.TFC_API_TOKEN }}
+          TFE_TOKEN: ${{ secrets.TFC_API_TOKEN }}
           SCW_DEFAULT_REGION: fr-par
 
       - name: Terraform Format & Validate
