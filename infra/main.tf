@@ -1,3 +1,15 @@
+# Terraform Cloud Backend Configuration
+terraform {
+  cloud {
+    organization = "Booohking"
+
+    workspaces {
+      name = "booohking-terraform-workspace"
+    }
+  }
+}
+
+# Module and Data Source Configuration (main module)
 data "scaleway_container_namespace" "laravel_namespace" {
   name   = var.namespace_name
   region = var.region
@@ -32,6 +44,15 @@ module "laravel_app" {
   }
 }
 
+# Provider Configuration
+provider "scaleway" {
+  access_key         = var.scaleway_access_key
+  secret_key         = var.scaleway_secret_key
+  project_id = var.scaleway_project_id
+  region             = var.region
+  zone               = "fr-par-1"
+}
+
 terraform {
   required_providers {
     scaleway = {
@@ -41,12 +62,4 @@ terraform {
   }
 
   required_version = ">= 1.5.0"
-}
-
-provider "scaleway" {
-  access_key         = var.scaleway_access_key
-  secret_key         = var.scaleway_secret_key
-  project_id = var.scaleway_project_id
-  region             = var.region
-  zone               = "fr-par-1"
 }
