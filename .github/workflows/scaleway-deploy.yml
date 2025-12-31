@@ -88,11 +88,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Clean Terraform cache
-        run: |
-          rm -rf infra/.terraform
-          rm -f infra/.terraform.lock.hcl
-
       - name: Terraform Init
         working-directory: infra
         run: terraform init
