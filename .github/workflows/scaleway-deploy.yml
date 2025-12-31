@@ -19,7 +19,7 @@ env:
   TF_VAR_scaleway_access_key: ${{ secrets.SCW_ACCESS_KEY }}
   TF_VAR_scaleway_secret_key: ${{ secrets.SCW_SECRET_KEY }}
   TF_VAR_region: fr-par
-  TF_API_TOKEN: ${{ secrets.TFC_API_TOKEN }}
+  TFE_TOKEN: ${{ secrets.TFC_API_TOKEN }}
   #TF_VAR_redis_host: {{ secrets.REDIS_HOST }}
   #TF_VAR_redis_password: {{ secrets.REDIS_PASSWORD }}
 jobs:
@@ -87,6 +87,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+
+      - name: Create .terraformrc with token
+        run: echo 'credentials "app.terraform.io" { token = "${{ secrets.TFC_API_TOKEN }}" }' > $HOME/.terraformrc
 
       - name: Terraform Init
         working-directory: infra
