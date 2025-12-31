@@ -37,9 +37,8 @@ jobs:
 
       - name: Install Scaleway CLI
         run: |
-          curl -sL https://packages.scaleway.com/install.sh | bash
-          sudo apt-get update
-          sudo apt-get install -y scw
+          curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
