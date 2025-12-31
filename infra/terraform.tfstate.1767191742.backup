@@ -1,7 +1,7 @@
 {
   "version": 4,
   "terraform_version": "1.13.0",
-  "serial": 4,
+  "serial": 3,
   "lineage": "6c9d116e-572d-49d5-6476-e537411073f2",
   "outputs": {
     "container_url": {
@@ -40,7 +40,6 @@
       ]
     },
     {
-      "module": "module.laravel_app",
       "mode": "managed",
       "type": "scaleway_container",
       "name": "laravel_app",
