@@ -148,23 +148,26 @@ jobs:
       - name: Set container_id env
         run: echo "CONTAINER_ID=${{ secrets.CONTAINER_ID }}" >> $GITHUB_ENV
 
-      - name: Scaleway Update check the available flags and options
-        run: scw container container update --help
-
       - name: Update Scaleway container environment variables
         if: env.CONTAINER_ID != '0'
         run: |
-          # Secret env vars
+          # Secret environment vars
           scw container container update ${{ env.CONTAINER_ID }} \
-            --environment-variables \
-            APP_KEY=${{ secrets.APP_KEY }},\
-            DB_URL=${{ secrets.DB_URL }},\
-            JWT_SECRET=${{ secrets.JWT_SECRET }},\
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-            MAIL_HOST=${{ secrets.MAIL_HOST }},\
-            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }},\
-            MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }},\
-            MAIL_FROM_NAME=${{ secrets.MAIL_FROM_NAME }}
+            secret-environment-variables.0.key=APP_KEY \
+            secret-environment-variables.0.value=${{ secrets.APP_KEY }} \
+            secret-environment-variables.1.key=DB_URL \
+            secret-environment-variables.1.value=${{ secrets.DB_URL }} \
+            secret-environment-variables.2.key=JWT_SECRET \
+            secret-environment-variables.2.value=${{ secrets.JWT_SECRET }} \
+            secret-environment-variables.3.key=MAIL_PASSWORD \
+            secret-environment-variables.3.value=${{ secrets.MAIL_PASSWORD }} \
+
+          # Regular environment vars
+          scw container container update ${{ env.CONTAINER_ID }} \
+            environment-variables.MAIL_HOST=${{ secrets.MAIL_HOST }} \
+            environment-variables.MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
+            environment-variables.MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }} \
+            environment-variables.MAIL_FROM_NAME=${{ secrets.MAIL_FROM_NAME }}
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
