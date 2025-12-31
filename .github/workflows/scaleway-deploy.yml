@@ -102,6 +102,10 @@ jobs:
         run: |
           terraform validate
 
+      - name: Show Terraform state
+        working-directory: infra
+        run: terraform state show module.laravel_app.scaleway_container.laravel_app
+
       - name: Terraform Plan
         working-directory: infra
         run: terraform plan -out=tfplan -input=false -var="registry_image=${{ env.IMAGE }}" -var="use_redis=false"
