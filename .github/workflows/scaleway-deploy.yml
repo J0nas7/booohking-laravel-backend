@@ -93,7 +93,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: infra
-        run: terraform init -migrate=true
+        run: terraform init -input=false
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
