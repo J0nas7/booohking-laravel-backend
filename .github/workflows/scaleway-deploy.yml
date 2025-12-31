@@ -149,7 +149,7 @@ jobs:
         run: echo "CONTAINER_ID=${{ secrets.CONTAINER_ID }}" >> $GITHUB_ENV
 
       - name: Update Scaleway container environment variables
-        if: env.CONTAINER_ID != '0'
+        if: env.CONTAINER_ID != ''
         run: |
           # Secret environment vars
           scw container container update ${{ env.CONTAINER_ID }} \
