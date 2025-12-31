@@ -35,6 +35,12 @@ jobs:
           extensions: mbstring, pdo, pdo_mysql
           coverage: none
 
+      - name: Install Scaleway CLI
+        run: |
+          curl -sL https://packages.scaleway.com/install.sh | bash
+          sudo apt-get update
+          sudo apt-get install -y scw
+
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
