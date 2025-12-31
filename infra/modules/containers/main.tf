@@ -1,6 +1,5 @@
 resource "scaleway_container" "laravel_app" {
-  # new container each deploy
-  name           = var.container_name
+  name           = "booohking-laravel-backend"
   registry_image = var.registry_image
   namespace_id   = var.namespace_id
   port           = 8080
