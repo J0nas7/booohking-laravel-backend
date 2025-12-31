@@ -139,31 +139,3 @@ jobs:
           TF_VAR_namespace_name: ${{ secrets.NAMESPACE_NAME }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
           SCW_DEFAULT_REGION: fr-par
-
-      - name: Set container_id env
-        run: echo "CONTAINER_ID=${{ secrets.CONTAINER_ID }}" >> $GITHUB_ENV
-
-      - name: Update Scaleway container environment variables
-        if: env.CONTAINER_ID != ''
-        run: |
-          # Secret environment vars
-          scw container container update ${{ env.CONTAINER_ID }} \
-            secret-environment-variables.0.key=APP_KEY \
-            secret-environment-variables.0.value=${{ secrets.APP_KEY }} \
-            secret-environment-variables.1.key=DB_URL \
-            secret-environment-variables.1.value=${{ secrets.DB_URL }} \
-            secret-environment-variables.2.key=JWT_SECRET \
-            secret-environment-variables.2.value=${{ secrets.JWT_SECRET }} \
-            secret-environment-variables.3.key=MAIL_PASSWORD \
-            secret-environment-variables.3.value=${{ secrets.MAIL_PASSWORD }} \
-
-          # Regular environment vars
-          scw container container update ${{ env.CONTAINER_ID }} \
-            environment-variables.MAIL_HOST=${{ secrets.MAIL_HOST }} \
-            environment-variables.MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
-            environment-variables.MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }} \
-            environment-variables.MAIL_FROM_NAME=${{ secrets.MAIL_FROM_NAME }}
-        env:
-          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
