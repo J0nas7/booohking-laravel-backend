@@ -140,16 +140,14 @@ jobs:
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
           SCW_DEFAULT_REGION: fr-par
 
-      - name: Get Scaleway container ID
-        id: container
-        working-directory: infra
-        run: |
-          echo "container_id=$(terraform output -raw container_id)" >> $GITHUB_ENV
+      - name: Set container_id env
+        run: echo "CONTAINER_ID=${{ secrets.CONTAINER_ID }}" >> $GITHUB_ENV
 
       - name: Update Scaleway container environment variables
+        if: env.CONTAINER_ID != '0'
         run: |
           # Secret env vars
-          scw container update ${{ env.container_id }} \
+          scw container update ${{ env.CONTAINER_ID }} \
             --secret-environment-variables \
             APP_KEY=${{ secrets.APP_KEY }},\
             DB_URL=${{ secrets.DB_URL }},\
@@ -157,7 +155,7 @@ jobs:
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
 
           # Regular env vars
-          scw container update ${{ env.container_id }} \
+          scw container update ${{ env.CONTAINER_ID }} \
             --environment-variables \
             MAIL_HOST=${{ secrets.MAIL_HOST }},\
             MAIL_USERNAME=${{ secrets.MAIL_USERNAME }},\
