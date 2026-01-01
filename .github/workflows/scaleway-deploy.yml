@@ -50,6 +50,16 @@ jobs:
           touch database/database.sqlite
           # Run migrations and seed the database
           php artisan migrate --seed
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_URL: ${{ secrets.DB_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
+          MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+          SESSION_DRIVER: ${{ secrets.SESSION_DRIVER }}
 
       - name: Run Laravel tests
         run: php artisan test
