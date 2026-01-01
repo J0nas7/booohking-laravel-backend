@@ -55,7 +55,8 @@ class AuthController extends Controller
      */
     public function ok(LoginRequest $request)
     {
-        dd($request->validated());
+        $result = $this->authService->authenticateUser($request->validated());
+        dd($result);
     }
 
     // Login a user and issue a JWT.
