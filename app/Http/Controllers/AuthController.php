@@ -54,6 +54,7 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request)
     {
+        dd($request->validated());
         $result = $this->authService->authenticateUser($request->validated());
 
         if (!$result->error) {
