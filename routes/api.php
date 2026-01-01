@@ -32,7 +32,8 @@ $publicApiMiddleware = ['api'];
 // =======================
 Route::group(['middleware' => $publicApiMiddleware], function () {
     Route::get('/', function () {
-        try {
+        echo "Test";
+        /*try {
             Mail::raw('This is a test email', function ($message) {
                 $message->to('jonas.sorensen.93dk@gmx.com')
                     ->subject('Test Email from Booohking :)');
@@ -43,7 +44,7 @@ Route::group(['middleware' => $publicApiMiddleware], function () {
         } catch (\Exception $e) {
             // Catch any error (SMTP connection issues, authentication, etc.)
             echo 'Failed to send email. Error: ' . $e->getMessage();
-        }
+        }*/
     });
 
     // ---- AuthController Routes ----
