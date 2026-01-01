@@ -33,9 +33,6 @@ $publicApiMiddleware = ['api'];
 // PUBLIC API ROUTES
 // =======================
 Route::group(['middleware' => $publicApiMiddleware], function () {
-    Route::post('/post', function () {
-        print_r($_POST);
-    });
     Route::get('/', function () {
         $validated = [
             "email" => "jonas-adm@booohking.com",
@@ -66,6 +63,7 @@ Route::group(['middleware' => $publicApiMiddleware], function () {
 
     // ---- AuthController Routes ----
     Route::prefix('auth')->controller(AuthController::class)->group(function () {
+        Route::post('test', 'test');
         Route::post('activate-account', 'activate');
         Route::post('login', 'login')->middleware('throttle:login')->name('login');
         Route::post('forgot-password', 'forgotPassword')->middleware('throttle:password-reset')->name('password.email');

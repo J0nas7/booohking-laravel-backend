@@ -48,6 +48,11 @@ class AuthController extends Controller
         return ApiResponse::fromServiceResult($result);
     }
 
+    public function test()
+    {
+        print_r($_POST);
+    }
+
     // Login a user and issue a JWT.
     /**
      * @param Request $request
