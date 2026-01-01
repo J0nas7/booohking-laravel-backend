@@ -12,6 +12,7 @@ use App\Http\Requests\{
 use App\Helpers\ApiResponse;
 use App\Services\AuthService;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Request;
 
 class AuthController extends Controller
 {
@@ -52,9 +53,9 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(LoginRequest $request)
+    public function login(Request $request)
     {
-        dd($request->validated());
+        dd($request->all());
         $result = $this->authService->authenticateUser($request->validated());
 
         if (!$result->error) {
@@ -77,7 +78,7 @@ class AuthController extends Controller
 
     // Reset password using token.
     /**
-     * @param Request $request
+     * @param ResetPasswordRequest $request
      * @return JsonResponse
      */
     public function resetPassword(ResetPasswordRequest $request)
