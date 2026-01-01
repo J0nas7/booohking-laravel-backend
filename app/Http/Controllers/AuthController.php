@@ -57,11 +57,12 @@ class AuthController extends Controller
     {
         $result = $this->authService->authenticateUser($request->validated());
 
-        dd($result);
         if (!$result->error) {
+            dd("!result->error");
             $this->authService->forgetUserFromCache($result);
         }
 
+        dd("ApiResponse");
         return ApiResponse::fromServiceResult($result);
     }
 
