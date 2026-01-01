@@ -23,7 +23,7 @@ return [
         // DEV
         'http://localhost:3000',
         // PROD
-        'https://nsbooohkingnextjsfromk7apuyb-booohking-nextjs-frontend.functions.fnc.fr-par.scw.cloud',
+        'https://booohking.jonas-alexander.dk',
     ],
 
     'allowed_origins_patterns' => [],
