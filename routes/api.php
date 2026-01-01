@@ -33,6 +33,9 @@ $publicApiMiddleware = ['api'];
 // PUBLIC API ROUTES
 // =======================
 Route::group(['middleware' => $publicApiMiddleware], function () {
+    Route::post('/post', function () {
+        print_r($_POST);
+    });
     Route::get('/', function () {
         $validated = [
             "email" => "jonas-adm@booohking.com",
