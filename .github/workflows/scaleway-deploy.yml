@@ -44,10 +44,12 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Create SQLite database
+      - name: Create SQLite database and run migrations
         run: |
           # Create SQLite database file
           touch database/database.sqlite
+          # Run migrations and seed the database
+          php artisan migrate
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_URL: ${{ secrets.DB_URL }}
