@@ -34,20 +34,7 @@ $publicApiMiddleware = ['api'];
 // =======================
 Route::group(['middleware' => $publicApiMiddleware], function () {
     Route::get('/', function () {
-        $validated = [
-            "email" => "jonas-adm@booohking.com",
-            "password" => "abc123def"
-        ];
-
-        if (!$token = Auth::guard('api')->attempt($validated)) {
-            echo 'Invalid email or password';
-        }
-
-        // Get the authenticated user
-        $user = Auth::guard('api')->user();
-
-        print_r($user);
-        /*try {
+        try {
             Mail::raw('This is a test email', function ($message) {
                 $message->to('jonas.sorensen.93dk@gmx.com')
                     ->subject('Test Email from Booohking :)');
@@ -58,7 +45,7 @@ Route::group(['middleware' => $publicApiMiddleware], function () {
         } catch (\Exception $e) {
             // Catch any error (SMTP connection issues, authentication, etc.)
             echo 'Failed to send email. Error: ' . $e->getMessage();
-        }*/
+        }
     });
 
     // ---- AuthController Routes ----
