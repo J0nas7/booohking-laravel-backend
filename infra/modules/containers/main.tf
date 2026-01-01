@@ -18,7 +18,7 @@ resource "scaleway_container" "laravel_app" {
 
         SESSION_DRIVER    = var.session_driver
         QUEUE_CONNECTION  = var.use_redis ? "redis" : "sync"
-        CACHE_STORE       = var.use_redis ? "redis" : "database"
+        CACHE_STORE       = var.use_redis ? "redis" : "array"
 
         MAIL_MAILER       = "smtp"
         MAIL_HOST         = var.mail_host
