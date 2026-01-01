@@ -24,6 +24,7 @@ use App\Http\Controllers\{
     ServiceController,
     UserController
 };
+use App\Models\User;
 
 $publicApiMiddleware = ['api'];
 
@@ -32,7 +33,8 @@ $publicApiMiddleware = ['api'];
 // =======================
 Route::group(['middleware' => $publicApiMiddleware], function () {
     Route::get('/', function () {
-        echo "Test";
+        $users = User::all();
+        print_r($users);
         /*try {
             Mail::raw('This is a test email', function ($message) {
                 $message->to('jonas.sorensen.93dk@gmx.com')
