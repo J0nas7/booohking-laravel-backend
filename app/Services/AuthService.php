@@ -294,6 +294,7 @@ class AuthService
 
         $userId = $result->data['user']->id;
         $cacheKey = 'user:me:' . $userId;
+        dd(env("CACHE_STORE"));
         Cache::forget($cacheKey);
     }
 }
