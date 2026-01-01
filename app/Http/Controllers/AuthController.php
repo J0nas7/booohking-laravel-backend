@@ -57,6 +57,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->authenticateUser($request->validated());
 
+        dd($result);
         if (!$result->error) {
             $this->authService->forgetUserFromCache($result);
         }
