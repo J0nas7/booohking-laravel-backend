@@ -53,24 +53,6 @@ class AuthController extends Controller
      * @param LoginRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function ok(LoginRequest $request)
-    {
-        $result = $this->authService->authenticateUser($request->validated());
-
-        if (!$result->error) {
-            $this->authService->forgetUserFromCache($result);
-            dd("forgetUserFromCache");
-        }
-
-        dd("ApiResponse");
-        return ApiResponse::fromServiceResult($result);
-    }
-
-    // Login a user and issue a JWT.
-    /**
-     * @param LoginRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function login(LoginRequest $request)
     {
         $result = $this->authService->authenticateUser($request->validated());
