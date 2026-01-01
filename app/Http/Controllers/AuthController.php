@@ -48,7 +48,7 @@ class AuthController extends Controller
         return ApiResponse::fromServiceResult($result);
     }
 
-    public function test()
+    public function ok()
     {
         print_r($_POST);
     }
