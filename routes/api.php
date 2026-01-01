@@ -25,6 +25,7 @@ use App\Http\Controllers\{
     UserController
 };
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 $publicApiMiddleware = ['api'];
 
@@ -33,8 +34,19 @@ $publicApiMiddleware = ['api'];
 // =======================
 Route::group(['middleware' => $publicApiMiddleware], function () {
     Route::get('/', function () {
-        $users = User::all();
-        print_r($users);
+        $validated = [
+            "email" => "jonas-adm@booohking.com",
+            "password" => "abc123def"
+        ];
+
+        if (!$token = Auth::guard('api')->attempt($validated)) {
+            echo 'Invalid email or password';
+        }
+
+        // Get the authenticated user
+        $user = Auth::guard('api')->user();
+
+        print_r($user);
         /*try {
             Mail::raw('This is a test email', function ($message) {
                 $message->to('jonas.sorensen.93dk@gmx.com')
